@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using HexMaster.ShortLink.Data.Entities;
-using HexMaster.ShortLink.Messages;
+using HexMaster.ShortLink.Core;
+using HexMaster.ShortLink.Core.Entities;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
@@ -13,7 +13,8 @@ namespace HexMaster.ShortLink.Maintenance.Functions
     public static class HitsCleanupFunction
     {
         [FunctionName("HitsCleanupFunction")]
-        public static async Task Run([TimerTrigger("0 * * * * *")] TimerInfo myTimer,
+        public static async Task Run(
+            [TimerTrigger("0 * * * * *")] TimerInfo myTimer,
             [Table(TableNames.Hits)] CloudTable table,
             ILogger log)
         {

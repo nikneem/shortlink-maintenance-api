@@ -1,8 +1,8 @@
 using System;
 using System.Threading.Tasks;
+using HexMaster.ShortLink.Core;
+using HexMaster.ShortLink.Core.Entities;
 using HexMaster.ShortLink.Core.Models.Analytics;
-using HexMaster.ShortLink.Data.Entities;
-using HexMaster.ShortLink.Messages;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
