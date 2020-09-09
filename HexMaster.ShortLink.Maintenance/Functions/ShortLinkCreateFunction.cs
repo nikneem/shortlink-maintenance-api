@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HexMaster.ShortLink.Core.Models.ShortLinks;
+using HexMaster.ShortLink.Core.Validators;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -20,11 +21,17 @@ namespace HexMaster.ShortLink.Maintenance.Functions
             ILogger log)
         {
             var model = await req.Content.ReadAsAsync<ShortLinkCreateDto>();
-            if (Regex.IsMatch(model.EndpointUrl, UrlRegularExpression))
+            var validator = new ShortLinkCreateValidator();
+            var validationResult = await validator.ValidateAsync(model);
+            if (!validationResult.IsValid)
             {
-                // Do stuff
+                log.LogWarning("Could not create ShortLink due to validation errors");
+                foreach (var err in validationResult.Errors)
+                {
+                    log.LogInformation($"Validation result in ShortLink Create model: '{err.ErrorMessage}'");
+                }
+                return new BadRequestObjectResult(validationResult.Errors);
             }
-            return new BadRequestResult();
         }
     }
 }
