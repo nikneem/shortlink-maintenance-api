@@ -14,11 +14,11 @@ namespace HexMaster.ShortLink.Maintenance.Functions
     public  class ShortLinkCreateFunction
     {
         private readonly IShortLinksService _service;
+        private readonly ILogger<ShortLinkCreateFunction> _logger;
 
         [FunctionName("ShortLinkCreateFunction")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "shortlinks")] HttpRequestMessage req,
-            ILogger log)
+            [HttpTrigger(AuthorizationLevel.User, "post", Route = "shortlinks")] HttpRequestMessage req)
         {
             try
             {
@@ -28,19 +28,21 @@ namespace HexMaster.ShortLink.Maintenance.Functions
             }
             catch (ModelValidationException validationEx)
             {
-                log.LogWarning(validationEx, "Validation error occurred while trying to add a new short link");
+                _logger.LogWarning(validationEx, "Validation error occurred while trying to add a new short link");
                 return new BadRequestObjectResult(validationEx.Errors);
             }
             catch (Exception ex)
             {
-                log.LogError(ex, "Unhandled exception occurred while trying to add a new short link");
+                _logger.LogError(ex, "Unhandled exception occurred while trying to add a new short link");
                 return new BadRequestObjectResult(ex.Message);
             }
         }
 
-        public ShortLinkCreateFunction(IShortLinksService service)
+        public ShortLinkCreateFunction(IShortLinksService service,
+            ILogger<ShortLinkCreateFunction> logger)
         {
             _service = service;
+            _logger = logger;
         }
 
     }

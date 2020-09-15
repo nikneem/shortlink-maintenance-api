@@ -13,7 +13,7 @@ namespace HexMaster.ShortLink.Maintenance.Functions
     public static class AggregateDailyHitsFunction
     {
         [FunctionName("AggregateDailyHitsFunction")]
-        public static async Task Run([TimerTrigger("0 * * * * *")]TimerInfo myTimer, 
+        public static async Task Run([TimerTrigger("0 0 0 * * *")]TimerInfo myTimer, 
             [Table(TableNames.Hits)] CloudTable table,
             [Table(TableNames.HitsPerDay)] CloudTable hourlyHitsTable,
             ILogger log)

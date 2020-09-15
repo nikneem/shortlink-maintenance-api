@@ -14,7 +14,7 @@ namespace HexMaster.ShortLink.Maintenance.Functions
     {
         [FunctionName("AggregateHourlyHitsFunction")]
         public static async Task Run(
-            [TimerTrigger("0 0 * * * *")]
+            [TimerTrigger("0 0 0 * * *")]
             TimerInfo myTimer,
             [Table(TableNames.Hits)] CloudTable table,
             [Table(TableNames.HitsPerHour)] CloudTable hourlyHitsTable,

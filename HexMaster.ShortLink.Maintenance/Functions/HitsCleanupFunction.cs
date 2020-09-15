@@ -14,7 +14,7 @@ namespace HexMaster.ShortLink.Maintenance.Functions
     {
         [FunctionName("HitsCleanupFunction")]
         public static async Task Run(
-            [TimerTrigger("0 * * * * *")] TimerInfo myTimer,
+            [TimerTrigger("0 0 0 * * *")] TimerInfo myTimer,
             [Table(TableNames.Hits)] CloudTable table,
             ILogger log)
         {
