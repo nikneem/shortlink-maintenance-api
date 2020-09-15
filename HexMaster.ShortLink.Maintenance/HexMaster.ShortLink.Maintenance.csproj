@@ -14,6 +14,9 @@
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.9" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\HexMaster.Functions.Auth\HexMaster.Functions.Auth.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="HexMaster.ShortLink.Core">
       <HintPath>..\..\shortlink-core\HexMaster.ShortLink.Core\bin\Debug\netstandard2.1\HexMaster.ShortLink.Core.dll</HintPath>
     </Reference>

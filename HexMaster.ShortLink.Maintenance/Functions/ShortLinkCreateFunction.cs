@@ -1,6 +1,8 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using HexMaster.Functions.Auth;
+using HexMaster.Functions.Auth.Model;
 using HexMaster.ShortLink.Core.Contracts;
 using HexMaster.ShortLink.Core.Exceptions;
 using HexMaster.ShortLink.Core.Models;
@@ -18,7 +20,9 @@ namespace HexMaster.ShortLink.Maintenance.Functions
 
         [FunctionName("ShortLinkCreateFunction")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.User, "post", Route = "shortlinks")] HttpRequestMessage req)
+            [HttpTrigger(AuthorizationLevel.User, "post", Route = "shortlinks")] HttpRequestMessage req,
+            [JwtBinding] AuthModel auth
+            )
         {
             try
             {
