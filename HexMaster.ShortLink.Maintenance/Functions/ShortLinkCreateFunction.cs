@@ -21,11 +21,15 @@ namespace HexMaster.ShortLink.Maintenance.Functions
         [FunctionName("ShortLinkCreateFunction")]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.User, "post", Route = "shortlinks")] HttpRequestMessage req,
-            [JwtBinding] AuthModel auth
+            [JwtBinding("%JwtBinding:Issuer%", "%JwtBinding:Audience%")] AuthorizedModel auth
             )
         {
             try
             {
+                if (!auth.IsAuthorized)
+                {
+                    return new UnauthorizedResult();
+                }
                 var model = await req.Content.ReadAsAsync<ShortLinkCreateDto>();
                 var createdModel = await _service.CreateAsync(model);
                 return new CreatedResult("https://app.4dn.me", createdModel);

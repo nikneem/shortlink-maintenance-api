@@ -1,4 +1,7 @@
-﻿using HexMaster.Functions.Auth.Model;
+﻿using System.Net.Http;
+using System.Net.Http.Headers;
+using HexMaster.Functions.Auth.Helpers;
+using HexMaster.Functions.Auth.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs.Description;
 using Microsoft.Azure.WebJobs.Host.Config;
@@ -21,18 +24,23 @@ namespace HexMaster.Functions.Auth
             rule.BindToInput(BuildItemFromAttribute);
         }
 
-        private AuthModel BuildItemFromAttribute(JwtBindingAttribute arg)
+        private AuthorizedModel BuildItemFromAttribute(JwtBindingAttribute arg)
         {
             if (_http.HttpContext != null)
             {
-                return new AuthModel
+                var authHeaderValue = _http.HttpContext.Request.Headers["Authorization"];
+                AuthenticationHeaderValue headerValue = AuthenticationHeaderValue.Parse(authHeaderValue);
+                var token =  TokenValidator.ValidateToken(headerValue,
+                    arg.Audience,
+                    arg.Issuer);
+                return new AuthorizedModel
                 {
-                    IsAuthenticated = _http.HttpContext.User.Identity.IsAuthenticated
+                    IsAuthorized = _http.HttpContext.User.Identity.IsAuthenticated
                 };
             }
-            return new AuthModel
+            return new AuthorizedModel
             {
-                IsAuthenticated = false
+                IsAuthorized = false
             };
         }
     }
