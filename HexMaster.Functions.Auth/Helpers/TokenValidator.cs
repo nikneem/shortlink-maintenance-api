@@ -1,67 +1,92 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using HexMaster.Functions.Auth.Model;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
 namespace HexMaster.Functions.Auth.Helpers
 {
-        public static class TokenValidator
+    public static class TokenValidator
+    {
+
+        private static ICollection<SecurityKey> _securityKeys;
+
+        public static AuthorizedModel ValidateToken(
+            AuthenticationHeaderValue value,
+            string audience,
+            string issuer)
         {
-            public static  AuthorizedModel ValidateToken(
-                AuthenticationHeaderValue value, 
-                string audience, 
-                string issuer)
+            var authorizedModel = new AuthorizedModel();
+            if (value?.Scheme != "Bearer")
+                return null;
+
+
+            var securityKeys = GetSigningKeys(issuer).Result;
+            var validationParameter = new TokenValidationParameters
             {
-                var authorizedModel = new AuthorizedModel();
-                if (value?.Scheme != "Bearer")
-                    return null;
+                RequireSignedTokens = false,
+                ValidAudience = audience,
+                ValidateAudience = !string.IsNullOrWhiteSpace(audience),
+                ValidIssuer = issuer,
+                ValidateIssuer = !string.IsNullOrWhiteSpace(issuer),
+                ValidateIssuerSigningKey = false,
+                ValidateLifetime = true,
+                IssuerSigningKeys = securityKeys
+            };
 
-                var validationParameter = new TokenValidationParameters
-                {
-                    RequireSignedTokens = true,
-                    ValidAudience = audience,
-                    ValidateAudience = !string.IsNullOrWhiteSpace(audience),
-                    ValidIssuer = issuer,
-                    ValidateIssuer = !string.IsNullOrWhiteSpace(issuer),
-                    ValidateIssuerSigningKey = false,
-                    ValidateLifetime = true,
-                    SignatureValidator = SignatureValidator
-                };
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                handler.ValidateToken(value.Parameter, validationParameter, out var token);
+                var jwtToken = token as JwtSecurityToken;
+                authorizedModel.IsAuthorized = true;
+                authorizedModel.Subject = jwtToken.Subject;
+                authorizedModel.Name = jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
 
-                    try
-                    {
-                        var handler = new JwtSecurityTokenHandler();
-                        handler.ValidateToken(value.Parameter, validationParameter, out var token);
-                        var jwtToken = token as JwtSecurityToken;
-                        authorizedModel.IsAuthorized = true;
-                        authorizedModel.Subject = jwtToken.Subject;
-                        authorizedModel.Name = jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
-                    }
-                    catch (SecurityTokenSignatureKeyNotFoundException ex1)
-                    {
-                        // This exception is thrown if the signature key of the JWT could not be found.
-                        // This could be the case when the issuer changed its signing keys, so we trigger a 
-                        // refresh and retry validation.
-                    }
-                    catch (SecurityTokenException ex2)
-                    {
-                        return null;
-                    }
-                    catch (Exception ex)
-                    {
-                        return null;
-                    }
-
-                return authorizedModel;
+            }
+            catch (SecurityTokenSignatureKeyNotFoundException ex1)
+            {
+                Console.WriteLine(ex1.Message);
+                Console.ResetColor();
+            }
+            catch (SecurityTokenException ex2)
+            {
+                Console.WriteLine(ex2.Message);
+                Console.ResetColor();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.ResetColor();
             }
 
-            private static SecurityToken SignatureValidator(string token, TokenValidationParameters validationparameters)
+            return authorizedModel;
+        }
+
+        private static async Task<ICollection<SecurityKey>> GetSigningKeys(string issuer)
+        {
+            if (_securityKeys == null)
             {
-                var st = new JwtSecurityToken(token);
-                return st;
+                var addSlashCharacter = issuer.EndsWith("/") ? "" : "/";
+                var stsDiscoveryEndpoint = $"{issuer}{addSlashCharacter}.well-known/openid-configuration";
+                var retriever = new OpenIdConnectConfigurationRetriever();
+                var configManager =
+                    new ConfigurationManager<OpenIdConnectConfiguration>(stsDiscoveryEndpoint, retriever);
+
+                var config = await configManager
+                    .GetConfigurationAsync()
+                    .ConfigureAwait(false);
+
+                _securityKeys = config.SigningKeys;
             }
+
+            return _securityKeys;
         }
     }
+}

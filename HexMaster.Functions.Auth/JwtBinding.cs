@@ -1,4 +1,4 @@
-﻿using System.Net.Http;
+﻿using System;
 using System.Net.Http.Headers;
 using HexMaster.Functions.Auth.Helpers;
 using HexMaster.Functions.Auth.Model;
@@ -8,7 +8,7 @@ using Microsoft.Azure.WebJobs.Host.Config;
 
 namespace HexMaster.Functions.Auth
 {
-    [Extension("JwtBinding")]
+    [Extension("JwtBinding", "JwtBinding")]
     public class JwtBinding : IExtensionConfigProvider
     {
         private readonly IHttpContextAccessor _http;
@@ -26,16 +26,21 @@ namespace HexMaster.Functions.Auth
 
         private AuthorizedModel BuildItemFromAttribute(JwtBindingAttribute arg)
         {
+            if (string.IsNullOrWhiteSpace(arg.Issuer))
+            {
+                throw new ArgumentNullException(nameof(arg.Issuer), "The JwtBinding requires an issuer to validate JWT Tokens");
+            }
             if (_http.HttpContext != null)
             {
                 var authHeaderValue = _http.HttpContext.Request.Headers["Authorization"];
-                AuthenticationHeaderValue headerValue = AuthenticationHeaderValue.Parse(authHeaderValue);
-                var token =  TokenValidator.ValidateToken(headerValue,
+                var headerValue = AuthenticationHeaderValue.Parse(authHeaderValue);
+                var token = TokenValidator.ValidateToken(
+                    headerValue,
                     arg.Audience,
                     arg.Issuer);
                 return new AuthorizedModel
                 {
-                    IsAuthorized = _http.HttpContext.User.Identity.IsAuthenticated
+                    IsAuthorized = token?.IsAuthorized ?? false
                 };
             }
             return new AuthorizedModel

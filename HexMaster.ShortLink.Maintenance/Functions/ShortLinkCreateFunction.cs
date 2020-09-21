@@ -1,8 +1,8 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using HexMaster.Functions.Auth;
-using HexMaster.Functions.Auth.Model;
+using HexMaster.Functions.JwtBinding;
+using HexMaster.Functions.JwtBinding.Model;
 using HexMaster.ShortLink.Core.Contracts;
 using HexMaster.ShortLink.Core.Exceptions;
 using HexMaster.ShortLink.Core.Models;
@@ -26,12 +26,9 @@ namespace HexMaster.ShortLink.Maintenance.Functions
         {
             try
             {
-                if (!auth.IsAuthorized)
-                {
-                    return new UnauthorizedResult();
-                }
                 var model = await req.Content.ReadAsAsync<ShortLinkCreateDto>();
-                var createdModel = await _service.CreateAsync(model);
+                var createdModel = await _service.CreateAsync(model, auth.Subject);
+                _logger.LogWarning($"Created a new ShotLink to https://4dn.me/{createdModel.ShortCode}");
                 return new CreatedResult("https://app.4dn.me", createdModel);
             }
             catch (ModelValidationException validationEx)

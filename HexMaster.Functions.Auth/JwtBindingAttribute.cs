@@ -9,8 +9,16 @@ namespace HexMaster.Functions.Auth
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.ReturnValue)]
     public class JwtBindingAttribute : Attribute
     {
+        public JwtBindingAttribute()
+        {
+        }
 
-        public JwtBindingAttribute(string issuer = null, string audience = null)
+        public JwtBindingAttribute(string issuer)
+        {
+            Issuer = issuer;
+        }
+
+        public JwtBindingAttribute(string issuer, string audience)
         {
             Issuer = issuer;
             Audience = audience;
@@ -21,5 +29,4 @@ namespace HexMaster.Functions.Auth
         [AutoResolve] public string Issuer { get; set; }
 
     }
-
 }
