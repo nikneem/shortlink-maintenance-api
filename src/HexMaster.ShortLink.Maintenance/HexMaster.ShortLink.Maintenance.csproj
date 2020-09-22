@@ -3,11 +3,12 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
     <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
+    <UserSecretsId>698a4ce1-fb92-4ccf-a5c5-b73f58ca1157</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="9.2.2" />
     <PackageReference Include="HexMaster.Functions.JwtBinding" Version="0.0.8" />
-    <PackageReference Include="HexMaster.ShortLink.Core" Version="20.9.18.1450" />
+    <PackageReference Include="HexMaster.ShortLink.Core" Version="20.9.22.1227" />
     <PackageReference Include="Microsoft.Azure.Cosmos.Table" Version="1.0.8" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventHubs" Version="4.1.1" />

@@ -1,15 +1,15 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using HexMaster.ShortLink.Core;
 using HexMaster.ShortLink.Core.Models.Analytics;
-using HexMaster.ShortLink.Data.Entities;
-using HexMaster.ShortLink.Messages;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Extensions.Logging;
+using HexMaster.ShortLink.Core.Entities;
 
 namespace HexMaster.ShortLink.Resolver.Functions
 {
@@ -29,7 +29,7 @@ namespace HexMaster.ShortLink.Resolver.Functions
             var now = DateTimeOffset.UtcNow;
             if (!string.IsNullOrWhiteSpace(path))
             {
-                var targetEndpoint = await ShortLinkEntity(table, path, log);
+                var targetEndpoint = await GetShortLinkEntity(table, path, log);
                 if (!string.IsNullOrWhiteSpace(targetEndpoint))
                 {
                     targetUrl = targetEndpoint;
@@ -46,18 +46,19 @@ namespace HexMaster.ShortLink.Resolver.Functions
             return new RedirectResult(targetUrl, true);
         }
 
-        private static async Task<string> ShortLinkEntity(CloudTable table, string path, ILogger log)
+        private static async Task<string> GetShortLinkEntity(CloudTable table, string path, ILogger log)
         {
             log.LogInformation($"Trying to resolve short link with short code {path}");
-            var pkQuery = TableQuery.GenerateFilterCondition(nameof(Data.Entities.ShortLinkEntity.PartitionKey),
+            var pkQuery = TableQuery.GenerateFilterCondition(PartitionKeys.ShortLinks,
                 QueryComparisons.Equal,
                 PartitionKeys.ShortLinks);
             var shortCodeQuery =
-                TableQuery.GenerateFilterCondition(nameof(Data.Entities.ShortLinkEntity.ShortCode),
+                TableQuery.GenerateFilterCondition(nameof(ShortLinkEntity.ShortCode),
                     QueryComparisons.Equal, path);
             var expirationQuery = TableQuery.GenerateFilterConditionForDate(
-                nameof(Data.Entities.ShortLinkEntity.ExpiresOn),
+                nameof(ShortLinkEntity.ExpiresOn),
                 QueryComparisons.GreaterThanOrEqual, DateTimeOffset.UtcNow);
+            
             var query = new TableQuery<ShortLinkEntity>().Where(
                 TableQuery.CombineFilters(expirationQuery, TableOperators.And,
                     TableQuery.CombineFilters(pkQuery, TableOperators.And, shortCodeQuery))

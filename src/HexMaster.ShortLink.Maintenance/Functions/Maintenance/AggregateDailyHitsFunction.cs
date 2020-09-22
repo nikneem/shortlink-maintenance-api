@@ -8,7 +8,7 @@ using Microsoft.Azure.Cosmos.Table;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 
-namespace HexMaster.ShortLink.Maintenance.Functions
+namespace HexMaster.ShortLink.Maintenance.Functions.Maintenance
 {
     public static class AggregateDailyHitsFunction
     {
