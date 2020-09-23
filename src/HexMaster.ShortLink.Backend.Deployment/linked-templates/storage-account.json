@@ -28,33 +28,33 @@
     {
       "type": "Microsoft.Storage/storageAccounts/fileServices",
       "apiVersion": "2019-06-01",
-      "name": "[concat(parameters('storageAccountName'), '/',  parameters('shares')[copyIndex()])]",
+      "name": "[concat(parameters('storageAccountName'), '/default')]",
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
       ],
       "sku": {
-        "name": "[variables('storageAccountSku')]"
+        "name": "Standard_RAGRS",
+        "tier": "Standard"
       },
       "properties": {
         "cors": {
           "corsRules": []
         }
-      },
-      "resources": [
-        {
-          "type": "shares",
-          "apiVersion": "2019-06-01",
-          "name": "[parameters('shares')[copyIndex()]]",
-          "dependsOn": [
-            "[resourceId('Microsoft.Storage/storageAccounts/fileServices', parameters('storageAccountName'), parameters('shares')[copyIndex()])]"
-          ],
-          "properties": {
-            "shareQuota": 5120
-          }
-        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+      "apiVersion": "2019-06-01",
+      "name": "[concat(parameters('storageAccountName'), '/default/',  parameters('shares')[copyIndex()])]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts/fileServices', parameters('storageAccountName'), 'default')]"
       ],
+      "properties": {
+        "shareQuota": 5120
+      },
       "copy": {
-        "name": "fileServicesCopy",
+        "name": "sharesCopyFunction",
         "count": "[length(parameters('shares'))]"
       }
     }
