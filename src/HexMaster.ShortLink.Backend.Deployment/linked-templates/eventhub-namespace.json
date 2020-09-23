@@ -4,6 +4,9 @@
   "parameters": {
     "eventHubNamespace": {
       "type": "string"
+    },
+    "eventHubs": {
+      "type": "array"
     }
   },
   "variables": {  },
@@ -12,7 +15,7 @@
       "type": "Microsoft.EventHub/namespaces",
       "apiVersion": "2018-01-01-preview",
       "name": "[parameters('eventHubNamespace')]",
-      "location": "West Europe",
+            "location": "[resourceGroup().location]",
       "sku": {
         "name": "Basic",
         "tier": "Basic",
@@ -29,12 +32,30 @@
       "type": "Microsoft.EventHub/namespaces/AuthorizationRules",
       "apiVersion": "2017-04-01",
       "name": "[concat(parameters('eventHubNamespace'), '/RootManageSharedAccessKey')]",
-      "location": "West Europe",
+            "location": "[resourceGroup().location]",
       "dependsOn": [
         "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespace'))]"
       ],
       "properties": {
         "rights": ["Listen", "Manage", "Send"]
+      }
+    },
+
+    {
+      "type": "Microsoft.EventHub/namespaces/eventhubs",
+      "apiVersion": "2017-04-01",
+      "name": "[concat(parameters('eventHubs')[copyIndex()], uniqueString(resourceGroup().id))]",
+            "location": "[resourceGroup().location]",
+      "dependsOn": [
+      ],
+      "properties": {
+        "messageRetentionInDays": 1,
+        "partitionCount": 2,
+        "status": "Active"
+      },
+            "copy": {
+        "name": "eventHubsCopy",
+        "count": "[length(parameters('eventHubs'))]"
       }
     }
   ],

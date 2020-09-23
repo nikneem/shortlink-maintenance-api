@@ -1,0 +1,338 @@
+﻿variables:
+  NUGET_XMLDOC_MODE: skip
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+trigger:
+  - master
+
+stages:
+  - stage: build
+    displayName: Build
+    jobs:
+      - job: build_resover_function
+        displayName: Build the resolver function
+        pool:
+          name: "Azure Pipelines"
+          vmImage: "windows-latest"
+        steps:
+          - task: DotNetCoreCLI@2
+            displayName: "Restore Packages"
+            inputs:
+              command: "restore"
+              projects: "**/*.csproj"
+              feedsToUse: "select"
+
+          - task: DotNetCoreCLI@2
+            displayName: Build
+            inputs:
+              command: "build"
+              projects: "$(Build.SourcesDirectory)/src/HexMaster.ShortLink.Resolver/HexMaster.ShortLink.Resolver.csproj"
+              arguments: --output $(System.DefaultWorkingDirectory)\publish_resolver_output --configuration Release
+
+          - task: ArchiveFiles@2
+            displayName: "Archive files"
+            inputs:
+              rootFolderOrFile: '$(System.DefaultWorkingDirectory)\publish_resolver_output'
+              includeRootFolder: false
+              archiveType: zip
+              archiveFile: $(Build.ArtifactStagingDirectory)/resolver-package/$(Build.BuildId).zip
+              replaceExistingArchive: true
+
+          - task: PublishPipelineArtifact@0
+            displayName: "Publish Artifact: resolver-package"
+            inputs:
+              artifactName: "resolver-package"
+              targetPath: "$(Build.ArtifactStagingDirectory)/resolver-package"
+
+      - job: build_maintenance_function
+        displayName: Build the maintenance function
+        pool:
+          name: "Azure Pipelines"
+          vmImage: "windows-latest"
+        steps:
+          - task: DotNetCoreCLI@2
+            displayName: "Restore Packages"
+            inputs:
+              command: "restore"
+              projects: "**/*.csproj"
+              feedsToUse: "select"
+
+          - task: DotNetCoreCLI@2
+            displayName: Build
+            inputs:
+              command: "build"
+              projects: "$(Build.SourcesDirectory)/src/HexMaster.ShortLink.Maintenance/HexMaster.ShortLink.Maintenance.csproj"
+              arguments: --output $(System.DefaultWorkingDirectory)\publish_maintenance_output --configuration Release
+
+          - task: ArchiveFiles@2
+            displayName: "Archive files"
+            inputs:
+              rootFolderOrFile: '$(System.DefaultWorkingDirectory)\publish_maintenance_output'
+              includeRootFolder: false
+              archiveType: zip
+              archiveFile: $(Build.ArtifactStagingDirectory)/maintenance-package/$(Build.BuildId).zip
+              replaceExistingArchive: true
+
+          - task: PublishPipelineArtifact@0
+            displayName: "Publish Artifact: maintenance-package"
+            inputs:
+              artifactName: "maintenance-package"
+              targetPath: "$(Build.ArtifactStagingDirectory)/maintenance-package"
+
+      - job: build_arm_template
+        displayName: Build the ARM Template
+        pool:
+          name: "Azure Pipelines"
+          vmImage: "windows-latest"
+        variables:
+          - group: keez-be-test
+        steps:
+          - task: CopyFiles@2
+            displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)\arm-template'
+            inputs:
+              SourceFolder: src/HexMaster.ShortLink.Backend.Deployment
+              Contents: '**\*.json'
+              TargetFolder: '$(Build.ArtifactStagingDirectory)\arm-template'
+          - task: Npm@1
+            displayName: "Install JSON Lint"
+            inputs:
+              command: custom
+              customCommand: "install jsonlint -g"
+          - script: "jsonlint $(Build.ArtifactStagingDirectory)/arm-template/azuredeploy.json"
+            displayName: "Validate ARM Template JSON Schema"
+          - task: AzureFileCopy@3
+            displayName: "Upload ARM linked templates"
+            inputs:
+              azureConnectionType: ConnectedServiceNameARM
+              SourcePath: "$(Build.ArtifactStagingDirectory)/arm-template/LinkedTemplates"
+              azureSubscription: "test-keez-online-api"
+              Destination: "AzureBlob"
+              storage: "testkeezapistorageacc"
+              ContainerName: "linkedtemplates"
+              outputStorageUri: "linkedTemplatesLocation"
+              outputStorageContainerSasToken: "linkedTemplatesLocationSasToken"
+              sasTokenTimeOutInMinutes: "15"
+          - task: AzureResourceGroupDeployment@2
+            displayName: "Validate ARM Template Deployment"
+            inputs:
+              azureSubscription: "test-keez-online-api"
+              resourceGroupName: "test-keez-backend"
+              location: "West Europe"
+              csmFile: "$(Build.ArtifactStagingDirectory)/arm-template/azuredeploy.json"
+              csmParametersFile: "$(Build.ArtifactStagingDirectory)/arm-template/azuredeploy.test.parameters.json"
+              overrideParameters: '-linkedTemplatesLocation "$(linkedTemplatesLocation)" -linkedTemplatesLocationSasToken "$(linkedTemplatesLocationSasToken)" -sqlServerAdminPassword "$(keez-test-sql-server-password)"'
+              deploymentMode: "Validation"
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish Pipeline Artifact"
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)\arm-template'
+              artifact: "arm-template"
+
+      - job: build_migrations
+        displayName: Build the database migrations package
+        pool:
+          name: "Azure Pipelines"
+          vmImage: "windows-latest"
+        steps:
+          - task: DotNetCoreCLI@2
+            displayName: "Publish Data Migration Package"
+            inputs:
+              command: "publish"
+              projects: "$(Build.SourcesDirectory)/HexMaster.Keez.Api.Migrations/HexMaster.Keez.Api.Migrations.csproj"
+              arguments: "--configuration Release --output $(Build.ArtifactStagingDirectory)/migrations-package -r win10-x64 --self-contained false"
+              publishWebProjects: false
+              zipAfterPublish: false
+
+          - task: PublishPipelineArtifact@0
+            displayName: "Publish Artifact: migrations-package"
+            inputs:
+              artifactName: "migrations-package"
+              targetPath: "$(Build.ArtifactStagingDirectory)/migrations-package"
+
+  - stage: test
+    displayName: "Deploy to Test"
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    dependsOn:
+      - build
+    jobs:
+      - deployment: deploy_arm_templates_incremental
+        displayName: "Deploy ARM Templates Incremental"
+        environment: "Keez-Api-Test"
+        pool:
+          name: "Azure Pipelines"
+          vmImage: "windows-2019"
+        variables:
+          - group: keez-be-test
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadPipelineArtifact@0
+                  displayName: "Download Artifact: arm-template"
+                  inputs:
+                    artifactName: "arm-template"
+                    targetPath: $(System.DefaultWorkingDirectory)/arm-template
+                - task: AzureFileCopy@3
+                  displayName: "Upload ARM linked templates"
+                  inputs:
+                    azureConnectionType: ConnectedServiceNameARM
+                    SourcePath: "arm-template/LinkedTemplates"
+                    azureSubscription: "test-keez-online-api"
+                    Destination: "AzureBlob"
+                    storage: "testkeezapistorageacc"
+                    ContainerName: "linkedtemplates"
+                    outputStorageUri: "linkedTemplatesLocation"
+                    outputStorageContainerSasToken: "linkedTemplatesLocationSasToken"
+                    sasTokenTimeOutInMinutes: "15"
+                - task: AzureResourceGroupDeployment@2
+                  displayName: "ARM template deployment"
+                  inputs:
+                    azureSubscription: "test-keez-online-api"
+                    resourceGroupName: "test-keez-backend"
+                    location: "West Europe"
+                    csmFile: "$(System.DefaultWorkingDirectory)/arm-template/azuredeploy.json"
+                    csmParametersFile: "$(System.DefaultWorkingDirectory)/arm-template/azuredeploy.test.parameters.json"
+                    overrideParameters: '-linkedTemplatesLocation "$(linkedTemplatesLocation)" -linkedTemplatesLocationSasToken "$(linkedTemplatesLocationSasToken)" -sqlServerAdminPassword "$(keez-test-sql-server-password)"'
+                    deploymentMode: Incremental
+
+      - deployment: deploy_database
+        displayName: "Deploy Database Schema"
+        environment: "Keez-Api-Test"
+        dependsOn:
+          - deploy_arm_templates_incremental
+        pool:
+          name: "Azure Pipelines"
+          vmImage: "windows-2019"
+        variables:
+          - group: keez-be-test
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadPipelineArtifact@0
+                  displayName: "Download Artifact: migrations-package"
+                  inputs:
+                    artifactName: "migrations-package"
+                    targetPath: $(System.DefaultWorkingDirectory)/migrations-package
+
+                - task: PowerShell@2
+                  displayName: "Update Database"
+                  inputs:
+                    targetType: "inline"
+                    failOnStderr: true
+                    script: |
+                      Write-Host "Executing command: $(System.DefaultWorkingDirectory)\migrations-package\HexMaster.Keez.Api.Migrations\HexMaster.Keez.Api.Migrations.exe migrate"
+                      $(System.DefaultWorkingDirectory)\migrations-package\HexMaster.Keez.Api.Migrations\HexMaster.Keez.Api.Migrations.exe migrate -n "test-keez-api-database" -s "test-keez-api-sql" -u "test-keez-api-sql" -p "$(keez-test-sql-server-password)"
+                      if ($LASTEXITCODE -ne 0) { 
+                        exit $LASTEXITCODE
+                      }
+
+                - task: PowerShell@2
+                  displayName: "Seed Database"
+                  inputs:
+                    targetType: "inline"
+                    failOnStderr: true
+                    script: |
+                      Write-Host "Executing command: $(System.DefaultWorkingDirectory)\migrations-package\HexMaster.Keez.Api.Migrations\HexMaster.Keez.Api.Migrations.exe seed"
+                      $(System.DefaultWorkingDirectory)\migrations-package\HexMaster.Keez.Api.Migrations\HexMaster.Keez.Api.Migrations.exe seed -n "test-keez-api-database" -s "test-keez-api-sql" -u "test-keez-api-sql" -p "$(keez-test-sql-server-password)"
+                      if ($LASTEXITCODE -ne 0) { 
+                        exit $LASTEXITCODE
+                      }
+
+
+      - deployment: deploy_webapi
+        displayName: "Deploy Web API"
+        environment: "Keez-Api-Test"
+        dependsOn:
+          - deploy_arm_templates_incremental
+        pool:
+          name: "Azure Pipelines"
+          vmImage: "windows-2019"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadPipelineArtifact@0
+                  displayName: "Download Artifact: webapi-package"
+                  inputs:
+                    artifactName: "webapi-package"
+                    targetPath: $(System.DefaultWorkingDirectory)/webapi-package
+
+                - task: AzureRmWebAppDeployment@4
+                  displayName: "API App Deploy: Keez Core API"
+                  inputs:
+                    azureSubscription: "test-keez-online-api"
+                    appType: web
+                    webAppName: "test-keez-api-app"
+                    package: "$(System.DefaultWorkingDirectory)/webapi-package/*.zip"
+
+      - deployment: deploy_functions
+        displayName: "Deploy Functions"
+        environment: "Keez-Api-Test"
+        dependsOn:
+          - deploy_arm_templates_incremental
+        pool:
+          name: "Azure Pipelines"
+          vmImage: "windows-2019"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadPipelineArtifact@0
+                  displayName: "Download Artifact: function-package"
+                  inputs:
+                    artifactName: "function-package"
+                    targetPath: $(System.DefaultWorkingDirectory)/function-package
+
+                - task: AzureRmWebAppDeployment@4
+                  displayName: "API App Deploy: Keez Functions"
+                  inputs:
+                    azureSubscription: "test-keez-online-api"
+                    appType: web
+                    webAppName: "test-keez-functions-app"
+                    package: '$(System.DefaultWorkingDirectory)\function-package\$(Build.BuildId).zip'
+                    deploymentMode: runFromPackage
+
+      - deployment: deploy_arm_templates_complete
+        displayName: Deploy ARM Templates Complete
+        environment: "Keez-Api-Test"
+        dependsOn:
+          - deploy_webapi
+          - deploy_functions
+          - deploy_database
+        pool:
+          name: "Azure Pipelines"
+          vmImage: "windows-2019"
+        variables:
+          - group: keez-be-test
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadPipelineArtifact@0
+                  displayName: "Download Artifact: arm-template"
+                  inputs:
+                    artifactName: "arm-template"
+                    targetPath: $(System.DefaultWorkingDirectory)/arm-template
+                - task: AzureFileCopy@3
+                  displayName: "Upload ARM linked templates"
+                  inputs:
+                    azureConnectionType: ConnectedServiceNameARM
+                    SourcePath: "arm-template/LinkedTemplates"
+                    azureSubscription: "test-keez-online-api"
+                    Destination: "AzureBlob"
+                    storage: "testkeezapistorageacc"
+                    ContainerName: "linkedtemplates"
+                    outputStorageUri: "linkedTemplatesLocation"
+                    outputStorageContainerSasToken: "linkedTemplatesLocationSasToken"
+                    sasTokenTimeOutInMinutes: "15"
+                - task: AzureResourceGroupDeployment@2
+                  displayName: "ARM template deployment"
+                  inputs:
+                    azureSubscription: "test-keez-online-api"
+                    resourceGroupName: "test-keez-backend"
+                    location: "West Europe"
+                    csmFile: "$(System.DefaultWorkingDirectory)/arm-template/azuredeploy.json"
+                    csmParametersFile: "$(System.DefaultWorkingDirectory)/arm-template/azuredeploy.test.parameters.json"
+                    overrideParameters: '-linkedTemplatesLocation "$(linkedTemplatesLocation)" -linkedTemplatesLocationSasToken "$(linkedTemplatesLocationSasToken)" -sqlServerAdminPassword "$(keez-test-sql-server-password)"'
+                    deploymentMode: Complete
