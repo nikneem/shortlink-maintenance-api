@@ -1,7 +1,12 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
-  "parameters": {},
+  "parameters": {
+"storageAccountConnectionString": {
+    "type": "string"
+}
+
+  },
   "variables": {
     "functionsAppServicePlan": "shortlink-test-resolve-plan",
     "functionsWebApp": "shortlink-test-resolve-app",
@@ -84,7 +89,8 @@
             "WEBSITE_RUN_FROM_PACKAGE": "1",
             "FUNCTIONS_WORKER_RUNTIME": "dotnet",
             "FUNCTIONS_EXTENSION_VERSION": "~3",
-            "WEBSITE_CONTENTSHARE": "[variables('storageShareName')]"
+            "WEBSITE_CONTENTSHARE": "[variables('storageShareName')]",
+            "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[parameters('storageAccountConnectionString')]"
           }
         },
         {

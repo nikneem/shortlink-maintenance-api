@@ -10,12 +10,13 @@
     }
   },
   "variables": {
-    "storageAccountSku": "Standard_RAGRS"
+    "storageAccountSku": "Standard_RAGRS",
+    "storageAccountApiVersion": "2019-06-01"
   },
   "resources": [
     {
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "2019-04-01",
+      "apiVersion": "[variables('storageAccountApiVersion')]",
       "name": "[parameters('storageAccountName')]",
       "location": "[resourceGroup().location]",
       "sku": {
@@ -27,7 +28,7 @@
 
     {
       "type": "Microsoft.Storage/storageAccounts/fileServices",
-      "apiVersion": "2019-06-01",
+      "apiVersion": "[variables('storageAccountApiVersion')]",
       "name": "[concat(parameters('storageAccountName'), '/default')]",
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
@@ -44,7 +45,7 @@
     },
     {
       "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
-      "apiVersion": "2019-06-01",
+      "apiVersion": "[variables('storageAccountApiVersion')]",
       "name": "[concat(parameters('storageAccountName'), '/default/',  parameters('shares')[copyIndex()])]",
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
@@ -59,5 +60,10 @@
       }
     }
   ],
-  "outputs": {}
+  "outputs": {
+    "storageAccountConnectionString": {
+      "type": "string",
+      "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), variables('storageAccountApiVersion')).keys[0].value)]"
+    }
+  }
 }

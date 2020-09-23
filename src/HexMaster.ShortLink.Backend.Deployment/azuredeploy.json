@@ -26,27 +26,8 @@
     "functionsAppTemplate": "[concat(variables('linkedTemplatesLocation'), 'function-app.json')]"
   },
   "resources": [
-    {
-      "name": "eventHubNamespace",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-08-01",
-      "dependsOn": [],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('eventHubNamespaceTemplate')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "eventHubNamespace": {
-            "value": "[variables('eventHubNamespace')]"
-          },
-          "eventHubs": {
-            "value": "[variables('eventHubs')]"
-          }
-        }
-      }
-    },
+
+
     {
       "name": "storageAccount",
       "type": "Microsoft.Resources/deployments",
@@ -68,18 +49,49 @@
         }
       }
     },
+
+
+    
     {
-      "name": "functionsApp",
+      "name": "eventHubNamespace",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-08-01",
       "dependsOn": [],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
+          "uri": "[variables('eventHubNamespaceTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "eventHubNamespace": {
+            "value": "[variables('eventHubNamespace')]"
+          },
+          "eventHubs": {
+            "value": "[variables('eventHubs')]"
+          }
+        }
+      }
+    },
+
+    {
+      "name": "functionsApp",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
           "uri": "[variables('functionsAppTemplate')]",
           "contentVersion": "1.0.0.0"
         },
-        "parameters": {}
+        "parameters": {
+          "storageAccountConnectionString": {
+            "value": "[reference('storageAccount').outputs.storageAccountConnectionString.value]"
+          }
+        }
       }
     }
   ],
