@@ -14,17 +14,16 @@
     "environment": "[parameters('environment')]",
     "systemName": "[parameters('systemName')]",
 
-
     "eventHubNamespace": "[concat(variables('systemName'), '-', variables('environment'), '-eventhub')]",
     "eventHubs": ["click-events"],
 
     "storageAccountName": "[concat(variables('systemName'), variables('environment'), 'storage')]",
     "storageAccountShares": ["resolve-function", "maintenance-function"],
 
-
     "linkedTemplatesLocation": "https://raw.githubusercontent.com/nikneem/shortlink-maintenance-api/main/src/HexMaster.ShortLink.Backend.Deployment/linked-templates/",
     "eventHubNamespaceTemplate": "[concat(variables('linkedTemplatesLocation'), 'eventhub-namespace.json')]",
-    "storageAccountTemplate": "[concat(variables('linkedTemplatesLocation'), 'storage-account.json')]"
+    "storageAccountTemplate": "[concat(variables('linkedTemplatesLocation'), 'storage-account.json')]",
+    "functionsAppTemplate": "[concat(variables('linkedTemplatesLocation'), 'function-app.json')]"
   },
   "resources": [
     {
@@ -48,7 +47,7 @@
         }
       }
     },
-        {
+    {
       "name": "storageAccount",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-08-01",
@@ -67,6 +66,20 @@
             "value": "[variables('storageAccountShares')]"
           }
         }
+      }
+    },
+    {
+      "name": "functionsApp",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('functionsAppTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {}
       }
     }
   ],
