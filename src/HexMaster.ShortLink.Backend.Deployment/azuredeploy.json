@@ -1,0 +1,77 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environment": {
+      "type": "string",
+      "allowedValues": ["dev", "test", "prod"]
+    },
+    "systemName": {
+      "type": "string"
+    },
+    "linkedTemplatesLocation": {
+      "type": "string",
+      "metadata": {
+        "description": "Base URI to linked templates location"
+      }
+    },
+    "linkedTemplatesLocationSasToken": {
+      "type": "string",
+      "metadata": {
+        "description": "SAS token to access linked templates container"
+      }
+    }
+  },
+  "variables": {
+    "environment": "[parameters('environment')]",
+    "systemName": "[parameters('systemName')]",
+
+    "eventHubNamespace": "[concat(variables('systemName'), '-', variables('environment'), '-eventhub')]",
+    "eventHubClickEvents": "click-events",
+
+    "eventHubNamespaceTemplate": "[concat(parameters('linkedTemplatesLocation'), 'eventhub-namespace.json', parameters('linkedTemplatesLocationSasToken'))]",
+    "eventHubTemplate": "[concat(parameters('linkedTemplatesLocation'), 'eventhub.json', parameters('linkedTemplatesLocationSasToken'))]"
+  },
+  "resources": [
+    {
+      "name": "eventHubNamespace",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Complete",
+        "templateLink": {
+          "uri": "[variables('eventHubNamespaceTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "eventHubNamespace": {
+            "value": "[variables('eventHubNamespace')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "eventHubs",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Complete",
+        "templateLink": {
+          "uri": "[variables('eventHubTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "eventHubNamespace": {
+            "value": "[variables('eventHubNamespace')]"
+          },
+          "eventHubName": {
+            "value": "[variables('eventHubClickEvents')]"
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}
