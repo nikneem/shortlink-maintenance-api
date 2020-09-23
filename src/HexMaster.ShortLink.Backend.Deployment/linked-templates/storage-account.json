@@ -40,24 +40,21 @@
           "corsRules": []
         }
       },
+      "resources": [
+        {
+          "type": "shares",
+          "apiVersion": "2019-06-01",
+          "name": "[parameters('shares')[copyIndex()]]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Storage/storageAccounts/fileServices', parameters('storageAccountName'), parameters('shares')[copyIndex()])]"
+          ],
+          "properties": {
+            "shareQuota": 5120
+          }
+        }
+      ],
       "copy": {
         "name": "fileServicesCopy",
-        "count": "[length(parameters('shares'))]"
-      }
-    },
-
-    {
-      "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
-      "apiVersion": "2019-06-01",
-      "name": "[concat(parameters('storageAccountName'), '/', parameters('shares')[copyIndex()], '/',  parameters('shares')[copyIndex()])]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts/fileServices', parameters('storageAccountName'), parameters('shares')[copyIndex()])]"
-      ],
-      "properties": {
-        "shareQuota": 5120
-      },
-      "copy": {
-        "name": "shareNamesCopy",
         "count": "[length(parameters('shares'))]"
       }
     }
