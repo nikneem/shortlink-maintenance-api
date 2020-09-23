@@ -1,0 +1,66 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storageAccountName": {
+      "type": "string"
+    },
+    "shares": {
+      "type": "array"
+    }
+  },
+  "variables": {
+    "storageAccountSku": "Standard_RAGRS"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2019-04-01",
+      "name": "[parameters('storageAccountName')]",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "[variables('storageAccountSku')]"
+      },
+      "kind": "StorageV2",
+      "resources": []
+    },
+
+    {
+      "type": "Microsoft.Storage/storageAccounts/fileServices",
+      "apiVersion": "2019-06-01",
+      "name": "[concat(parameters('storageAccountName'), '/',  parameters('shares')[copyIndex()])]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+      ],
+      "sku": {
+        "name": "[variables('storageAccountSku')]"
+      },
+      "properties": {
+        "cors": {
+          "corsRules": []
+        }
+      },
+      "copy": {
+        "name": "fileServicesCopy",
+        "count": "[length(parameters('shares'))]"
+      }
+    },
+
+    {
+      "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+      "apiVersion": "2019-06-01",
+      "name": "[concat(parameters('storageAccountName'), '/', parameters('shares')[copyIndex()], '/',  parameters('shares')[copyIndex()])]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/fileServices', parameters('storageAccountName'), parameters('shares')[copyIndex()])]"
+      ],
+      "properties": {
+        "shareQuota": 5120
+      },
+      "copy": {
+        "name": "shareNamesCopy",
+        "count": "[length(parameters('shares'))]"
+      }
+    }
+  ],
+  "outputs": {}
+}
