@@ -77,7 +77,9 @@
           "type": "config",
           "apiVersion": "2018-11-01",
           "location": "[resourceGroup().location]",
-          "dependsOn": [],
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', variables('functionsWebApp'))]"
+          ],
           "properties": {
             "WEBSITE_RUN_FROM_PACKAGE": "1",
             "FUNCTIONS_WORKER_RUNTIME": "dotnet",
