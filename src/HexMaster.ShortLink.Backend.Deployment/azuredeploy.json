@@ -17,6 +17,8 @@
     "applicationInsightsName": "[concat(variables('systemName'), '-', variables('environment'), '-appinsights')]",
     "keyVaultName": "[concat(variables('systemName'), '-', variables('environment'), '-kv')]",
     "eventHubNamespace": "[concat(variables('systemName'), '-', variables('environment'), '-eventhub')]",
+    "appConfigurationName": "[concat(variables('systemName'), '-', variables('environment'), '-config')]",
+
     "eventHubs": ["click-events"],
 
     "storageAccountName": "[concat(variables('systemName'), variables('environment'), 'storage')]",
@@ -27,11 +29,10 @@
     "storageAccountTemplate": "[concat(variables('linkedTemplatesLocation'), 'storage-account.json')]",
     "functionsAppTemplate": "[concat(variables('linkedTemplatesLocation'), 'function-app.json')]",
     "applicationInsightsTemplate": "[concat(variables('linkedTemplatesLocation'), 'application-insights.json')]",
-    "keyVaultTemplate": "[concat(variables('linkedTemplatesLocation'), 'keyvault.json')]"
+    "keyVaultTemplate": "[concat(variables('linkedTemplatesLocation'), 'keyvault.json')]",
+    "appConfigurationTemplate": "[concat(variables('linkedTemplatesLocation'), 'app-configuration.json')]"
   },
   "resources": [
-
-
     {
       "name": "applicationInsightsDeployment",
       "type": "Microsoft.Resources/deployments",
@@ -70,6 +71,41 @@
       }
     },
 
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2016-10-01",
+      "name": "[concat(variables('keyVaultName'), '/ApplicationInsightsInstrumentationKey')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
+        "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]"
+      ],
+      "properties": {
+        "attributes": {
+          "enabled": true
+        },
+        "value": "BANAAN"
+      }
+    },
+
+    {
+      "name": "appConfigurationDeployment",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('appConfigurationTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "appConfigurationName": {
+            "value": "[variables('appConfigurationName')]"
+          }
+        }
+      }
+    },
 
     {
       "name": "storageAccount",
