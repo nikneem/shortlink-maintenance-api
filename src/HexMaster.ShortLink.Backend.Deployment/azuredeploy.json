@@ -77,14 +77,14 @@
       "name": "[concat(variables('keyVaultName'), '/ApplicationInsightsInstrumentationKey')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]",
-        "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]"
+        "[resourceId('Microsoft.Resources/deployments', 'applicationInsightsDeployment')]",
+        "[resourceId('Microsoft.Resources/deployments', 'keyVaultDeployment')]"
       ],
       "properties": {
         "attributes": {
           "enabled": true
         },
-        "value": "BANAAN"
+        "value": "[reference('applicationInsightsDeployment').outputs.ApplicationInsightsInstrumentationKey.value]"
       }
     },
 
