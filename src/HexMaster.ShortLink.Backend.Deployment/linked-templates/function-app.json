@@ -1,16 +1,15 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-"storageAccountConnectionString": {
-    "type": "string"
-}
-
+    "storageAccountConnectionString": { "type": "string" },
+    "functionsWebApp": { "type": "string" },
+    "storageShareName": { "type": "string" }
   },
   "variables": {
-    "functionsAppServicePlan": "shortlink-test-resolve-plan",
-    "functionsWebApp": "shortlink-test-resolve-app",
-    "storageShareName": "resolve-function"
+    "functionsAppServicePlan": "[concat(parameters('functionsWebApp'), '-plan')]",
+    "functionsWebApp": "[concat(parameters('functionsWebApp'), '-app')]",
+    "storageShareName": "[parameters('storageShareName')]"
   },
   "resources": [
     {

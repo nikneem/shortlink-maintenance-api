@@ -14,8 +14,10 @@
     "environment": "[parameters('environment')]",
     "systemName": "[parameters('systemName')]",
 
+"applicationInsightsName": "[concat(variables('systemName'), '-', variables('environment'), '-appinsights')]",
     "eventHubNamespace": "[concat(variables('systemName'), '-', variables('environment'), '-eventhub')]",
     "eventHubs": ["click-events"],
+
 
     "storageAccountName": "[concat(variables('systemName'), variables('environment'), 'storage')]",
     "storageAccountShares": ["resolve-function", "maintenance-function"],
@@ -23,9 +25,32 @@
     "linkedTemplatesLocation": "https://raw.githubusercontent.com/nikneem/shortlink-maintenance-api/main/src/HexMaster.ShortLink.Backend.Deployment/linked-templates/",
     "eventHubNamespaceTemplate": "[concat(variables('linkedTemplatesLocation'), 'eventhub-namespace.json')]",
     "storageAccountTemplate": "[concat(variables('linkedTemplatesLocation'), 'storage-account.json')]",
-    "functionsAppTemplate": "[concat(variables('linkedTemplatesLocation'), 'function-app.json')]"
+    "functionsAppTemplate": "[concat(variables('linkedTemplatesLocation'), 'function-app.json')]",
+    "applicationInsightsTemplate": "[concat(variables('linkedTemplatesLocation'), 'application-insights.json')]"
   },
   "resources": [
+
+
+    {
+      "name": "functionsAppResolver",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [ ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('applicationInsightsTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "applicationInsightsName": {
+            "value": "[variables('applicationInsightsName')]"
+          }
+        }
+      }
+    },
+
+
 
 
     {
@@ -50,8 +75,6 @@
       }
     },
 
-
-    
     {
       "name": "eventHubNamespace",
       "type": "Microsoft.Resources/deployments",
@@ -75,7 +98,7 @@
     },
 
     {
-      "name": "functionsApp",
+      "name": "functionsAppResolver",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-08-01",
       "dependsOn": [
@@ -90,7 +113,31 @@
         "parameters": {
           "storageAccountConnectionString": {
             "value": "[reference('storageAccount').outputs.storageAccountConnectionString.value]"
-          }
+          },
+          "functionsWebApp": { "value": "shortlink-test-resolve" },
+          "storageShareName": { "value": "resolve-function" }
+        }
+      }
+    },
+    {
+      "name": "functionsAppMaintenance",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('functionsAppTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "storageAccountConnectionString": {
+            "value": "[reference('storageAccount').outputs.storageAccountConnectionString.value]"
+          },
+          "functionsWebApp": { "value": "shortlink-test-resolve" },
+          "storageShareName": { "value": "maintenance-function" }
         }
       }
     }
