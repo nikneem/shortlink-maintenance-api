@@ -14,10 +14,10 @@
     "environment": "[parameters('environment')]",
     "systemName": "[parameters('systemName')]",
 
-"applicationInsightsName": "[concat(variables('systemName'), '-', variables('environment'), '-appinsights')]",
+    "applicationInsightsName": "[concat(variables('systemName'), '-', variables('environment'), '-appinsights')]",
+    "keyVaultName": "[concat(variables('systemName'), '-', variables('environment'), '-kv')]",
     "eventHubNamespace": "[concat(variables('systemName'), '-', variables('environment'), '-eventhub')]",
     "eventHubs": ["click-events"],
-
 
     "storageAccountName": "[concat(variables('systemName'), variables('environment'), 'storage')]",
     "storageAccountShares": ["resolve-function", "maintenance-function"],
@@ -26,16 +26,17 @@
     "eventHubNamespaceTemplate": "[concat(variables('linkedTemplatesLocation'), 'eventhub-namespace.json')]",
     "storageAccountTemplate": "[concat(variables('linkedTemplatesLocation'), 'storage-account.json')]",
     "functionsAppTemplate": "[concat(variables('linkedTemplatesLocation'), 'function-app.json')]",
-    "applicationInsightsTemplate": "[concat(variables('linkedTemplatesLocation'), 'application-insights.json')]"
+    "applicationInsightsTemplate": "[concat(variables('linkedTemplatesLocation'), 'application-insights.json')]",
+    "keyVaultTemplate": "[concat(variables('linkedTemplatesLocation'), 'keyvault.json')]"
   },
   "resources": [
 
 
     {
-      "name": "functionsAppResolver",
+      "name": "applicationInsightsDeployment",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-08-01",
-      "dependsOn": [ ],
+      "dependsOn": [],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -50,7 +51,24 @@
       }
     },
 
-
+    {
+      "name": "keyVaultDeployment",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('keyVaultTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "keyVaultName": {
+            "value": "[variables('keyVaultName')]"
+          }
+        }
+      }
+    },
 
 
     {
