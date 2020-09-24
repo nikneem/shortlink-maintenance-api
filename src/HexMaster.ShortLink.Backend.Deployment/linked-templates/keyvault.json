@@ -2,9 +2,7 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-      "keyVaultName": {
-          "type": "string"
-      }
+    "keyVaultName": { "type": "string" }
   },
   "variables": {},
   "resources": [
@@ -16,12 +14,23 @@
       "properties": {
         "sku": {
           "family": "A",
-          "name": "standard"
+          "name": "Standard"
         },
-        "tenantId": "[subscription().tenantId]",
+        "tenantId": "922cee41-db95-4eff-8022-9b815f545dee",
+        "accessPolicies": [
+          {
+            "tenantId": "922cee41-db95-4eff-8022-9b815f545dee",
+            "objectId": "de55357b-c155-4de7-916f-ff12755cf5fb",
+            "permissions": {
+              "keys": ["All"],
+              "secrets": ["All"]
+            }
+          }
+        ],
         "enabledForDeployment": false,
         "enabledForDiskEncryption": false,
-        "enabledForTemplateDeployment": true
+        "enabledForTemplateDeployment": false,
+        "enableSoftDelete": true
       }
     }
   ],
