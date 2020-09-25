@@ -320,7 +320,8 @@
         "APPINSIGHTS_INSTRUMENTATIONKEY": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretApplicationInsightsInstrumentationKey'))]",
         "FUNCTIONS_WORKER_RUNTIME": "dotnet",
         "FUNCTIONS_EXTENSION_VERSION": "~3",
-        "WEBSITE_CONTENTSHARE": "resolve-function"
+        "WEBSITE_CONTENTSHARE": "resolve-function",
+        "WEBSITE_RUN_FROM_PACKAGE": "1"
       }
     },
     {
@@ -340,7 +341,8 @@
         "APPINSIGHTS_INSTRUMENTATIONKEY": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretApplicationInsightsInstrumentationKey'))]",
         "FUNCTIONS_WORKER_RUNTIME": "dotnet",
         "FUNCTIONS_EXTENSION_VERSION": "~3",
-        "WEBSITE_CONTENTSHARE": "maintenance-function"
+        "WEBSITE_CONTENTSHARE": "maintenance-function",
+        "WEBSITE_RUN_FROM_PACKAGE": "1"
       }
     }
   ],
