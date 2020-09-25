@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
@@ -9,6 +9,7 @@
     <PackageReference Include="FluentValidation" Version="9.2.2" />
     <PackageReference Include="HexMaster.Functions.JwtBinding" Version="0.0.8" />
     <PackageReference Include="HexMaster.ShortLink.Core" Version="20.9.25.1220" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.15.0" />
     <PackageReference Include="Microsoft.Azure.Cosmos.Table" Version="1.0.8" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventHubs" Version="4.1.1" />
@@ -16,9 +17,13 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.8" />
     <PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="4.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.15.0" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols" Version="6.7.1" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.7.1" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.9" />
+    <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
+    <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="3.1.0" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
