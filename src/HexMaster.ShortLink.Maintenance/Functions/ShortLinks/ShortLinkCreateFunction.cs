@@ -19,14 +19,14 @@ namespace HexMaster.ShortLink.Maintenance.Functions.ShortLinks
 
         [FunctionName("ShortLinkCreateFunction")]
         public async Task<IActionResult> Run(
-            [HttpTrigger("post", Route = "shortlinks")] HttpRequestMessage req,
-            [JwtBinding("%JwtBinding:Issuer%", "%JwtBinding:Audience%")] AuthorizedModel auth
+            [HttpTrigger("post", Route = "shortlinks")] HttpRequestMessage req
             )
         {
             try
             {
+                _logger.LogInformation($"Incoming request to create new short link to {req}");
                 var model = await req.Content.ReadAsAsync<ShortLinkCreateDto>();
-                var createdModel = await _service.CreateAsync(auth.Subject, model);
+                var createdModel = await _service.CreateAsync("someone", model);
                 _logger.LogWarning($"Created a new ShotLink to https://4dn.me/{createdModel.ShortCode}");
                 return new CreatedResult("https://app.4dn.me", createdModel);
             }
