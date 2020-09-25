@@ -321,6 +321,7 @@
         "FUNCTIONS_WORKER_RUNTIME": "dotnet",
         "FUNCTIONS_EXTENSION_VERSION": "~3",
         "WEBSITE_CONTENTSHARE": "resolve-function",
+        "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
         "WEBSITE_RUN_FROM_PACKAGE": "1"
       }
     },
@@ -342,6 +343,7 @@
         "FUNCTIONS_WORKER_RUNTIME": "dotnet",
         "FUNCTIONS_EXTENSION_VERSION": "~3",
         "WEBSITE_CONTENTSHARE": "maintenance-function",
+        "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
         "WEBSITE_RUN_FROM_PACKAGE": "1"
       }
     }
