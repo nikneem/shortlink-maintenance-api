@@ -13,19 +13,6 @@ namespace HexMaster.ShortLink.Maintenance
     public class Startup : FunctionsStartup
     {
 
-        public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
-        {
-            
-//            var currentConfig = builder.GetContext().Configuration;
-            
-
-            builder.ConfigurationBuilder.AddAzureAppConfiguration((options) =>
-            {
-                options.Connect(Environment.GetEnvironmentVariable("appConfigConnectionString"));
-            });
-
-        }
-
         public override void Configure(IFunctionsHostBuilder builder)
         {
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
