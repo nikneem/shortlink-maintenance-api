@@ -25,7 +25,7 @@
     "storageAccountShares": ["resolve-function", "maintenance-function"],
 
     "linkedTemplatesLocation": "https://raw.githubusercontent.com/nikneem/shortlink-maintenance-api/main/src/HexMaster.ShortLink.Backend.Deployment/linked-templates/",
-    "eventHubNamespaceTemplate": "[concat(variables('linkedTemplatesLocation'), 'eventhub-namespace.json')]",
+    "eventHubNamespaceTemplate": "[concat(variables('linkedTemplatesLocation'), 'EventHub/namespaces.json')]",
     "storageAccountTemplate": "[concat(variables('linkedTemplatesLocation'), 'storage-account.json')]",
     "functionsAppTemplate": "[concat(variables('linkedTemplatesLocation'), 'function-app.json')]",
     "applicationInsightsTemplate": "[concat(variables('linkedTemplatesLocation'), 'application-insights.json')]",
@@ -202,7 +202,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[variables('keyVaultAccessPoliciesTemplate')]",
+          "uri": "[variables('functionsAppTemplate')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -225,7 +225,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[variables('functionsAppTemplate')]",
+          "uri": "[variables('keyVaultAccessPoliciesTemplate')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -248,7 +248,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[variables('functionsAppTemplate')]",
+          "uri": "[variables('keyVaultAccessPoliciesTemplate')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {

@@ -40,6 +40,30 @@
         "rights": ["Listen", "Manage", "Send"]
       }
     },
+    {
+      "type": "Microsoft.EventHub/namespaces/AuthorizationRules",
+      "apiVersion": "2017-04-01",
+      "name": "[concat(parameters('eventHubNamespace'), '/GenericSender')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespace'))]"
+      ],
+      "properties": {
+        "rights": ["Send"]
+      }
+    },
+    {
+      "type": "Microsoft.EventHub/namespaces/AuthorizationRules",
+      "apiVersion": "2017-04-01",
+      "name": "[concat(parameters('eventHubNamespace'), '/GenericListener')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespace'))]"
+      ],
+      "properties": {
+        "rights": ["Listen"]
+      }
+    },
 
     {
       "type": "Microsoft.EventHub/namespaces/eventhubs",
@@ -60,5 +84,14 @@
       }
     }
   ],
-  "outputs": {}
+  "outputs": {
+    "EventHubSenderConnectionString": {
+      "type": "string",
+      "value": "[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespace').name, 'GenericSender'), '2017-04-01').primaryConnectionString]"
+    },
+    "EventHubListenerConnectionString": {
+      "type": "string",
+      "value": "[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespace').name, 'GenericListener'), '2017-04-01').primaryConnectionString]"
+    }
+  }
 }
