@@ -43,6 +43,7 @@
         }
       }
     },
+    
     {
       "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
       "apiVersion": "[variables('storageAccountApiVersion')]",

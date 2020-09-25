@@ -108,5 +108,10 @@
       ]
     }
   ],
-  "outputs": {}
+  "outputs": {
+    "ManagedIdentityPrincipalId": {
+      "type": "string",
+      "value": "[reference(concat(resourceId('Microsoft.Web/sites', variables('functionsWebApp')),'/providers/Microsoft.ManagedIdentity/Identities/default'), '2015-08-31-preview').principalId]"
+    }
+  }
 }
