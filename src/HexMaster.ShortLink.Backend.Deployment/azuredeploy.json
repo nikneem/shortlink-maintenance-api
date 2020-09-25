@@ -26,12 +26,11 @@
 
     "linkedTemplatesLocation": "https://raw.githubusercontent.com/nikneem/shortlink-maintenance-api/main/src/HexMaster.ShortLink.Backend.Deployment/linked-templates/",
     "eventHubNamespaceTemplate": "[concat(variables('linkedTemplatesLocation'), 'EventHub/namespaces.json')]",
-    "storageAccountTemplate": "[concat(variables('linkedTemplatesLocation'), 'storage-account.json')]",
-    "functionsAppTemplate": "[concat(variables('linkedTemplatesLocation'), 'function-app.json')]",
+    "storageAccountTemplate": "[concat(variables('linkedTemplatesLocation'), 'Storage/account.json')]",
+    "functionsAppTemplate": "[concat(variables('linkedTemplatesLocation'), 'Web/function-app.json')]",
     "applicationInsightsTemplate": "[concat(variables('linkedTemplatesLocation'), 'application-insights.json')]",
     "keyVaultTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/vaults.json')]",
-    "keyVaultAccessPoliciesTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/KeyVaultAccessPolicies.json')]",
-    "appConfigurationTemplate": "[concat(variables('linkedTemplatesLocation'), 'app-configuration.json')]"
+    "keyVaultAccessPoliciesTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/keyvaultaccesspolicies.json')]"
   },
   "resources": [
     {
@@ -95,6 +94,28 @@
     },
 
     {
+      "name": "eventHubNamespace",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('eventHubNamespaceTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "eventHubNamespace": {
+            "value": "[variables('eventHubNamespace')]"
+          },
+          "eventHubs": {
+            "value": "[variables('eventHubs')]"
+          }
+        }
+      }
+    },
+
+    {
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "2016-10-01",
       "name": "[concat(variables('keyVaultName'), '/ApplicationInsightsInstrumentationKey')]",
@@ -129,45 +150,40 @@
     },
 
     {
-      "name": "appConfigurationDeployment",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-08-01",
-      "dependsOn": [],
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2016-10-01",
+      "name": "[concat(variables('keyVaultName'), '/EventHubSenderConnectionString')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'eventHubNamespace')]",
+        "[resourceId('Microsoft.Resources/deployments', 'keyVaultDeployment')]"
+      ],
       "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('appConfigurationTemplate')]",
-          "contentVersion": "1.0.0.0"
+        "attributes": {
+          "enabled": true
         },
-        "parameters": {
-          "appConfigurationName": {
-            "value": "[variables('appConfigurationName')]"
-          }
-        }
+        "value": "[reference('eventHubNamespace').outputs.EventHubSenderConnectionString.value]"
       }
     },
 
     {
-      "name": "eventHubNamespace",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-08-01",
-      "dependsOn": [],
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2016-10-01",
+      "name": "[concat(variables('keyVaultName'), '/EventHubListenerConnectionString')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'eventHubNamespace')]",
+        "[resourceId('Microsoft.Resources/deployments', 'keyVaultDeployment')]"
+      ],
       "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('eventHubNamespaceTemplate')]",
-          "contentVersion": "1.0.0.0"
+        "attributes": {
+          "enabled": true
         },
-        "parameters": {
-          "eventHubNamespace": {
-            "value": "[variables('eventHubNamespace')]"
-          },
-          "eventHubs": {
-            "value": "[variables('eventHubs')]"
-          }
-        }
+        "value": "[reference('eventHubNamespace').outputs.EventHubListenerConnectionString.value]"
       }
     },
+
+
 
     {
       "name": "functionsAppResolver",
