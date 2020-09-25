@@ -320,8 +320,7 @@
         "APPINSIGHTS_INSTRUMENTATIONKEY": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretApplicationInsightsInstrumentationKey'))]",
         "FUNCTIONS_WORKER_RUNTIME": "dotnet",
         "FUNCTIONS_EXTENSION_VERSION": "~3",
-        "WEBSITE_CONTENTSHARE": "resolve-function",
-        "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]"
+        "WEBSITE_CONTENTSHARE": "resolve-function"
       }
     },
     {
@@ -341,8 +340,7 @@
         "APPINSIGHTS_INSTRUMENTATIONKEY": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretApplicationInsightsInstrumentationKey'))]",
         "FUNCTIONS_WORKER_RUNTIME": "dotnet",
         "FUNCTIONS_EXTENSION_VERSION": "~3",
-        "WEBSITE_CONTENTSHARE": "maintenance-function",
-        "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]"
+        "WEBSITE_CONTENTSHARE": "maintenance-function"
       }
     }
   ],
