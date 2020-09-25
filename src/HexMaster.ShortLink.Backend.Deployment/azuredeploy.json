@@ -28,7 +28,7 @@
     "eventHubNamespaceTemplate": "[concat(variables('linkedTemplatesLocation'), 'EventHub/namespaces.json')]",
     "storageAccountTemplate": "[concat(variables('linkedTemplatesLocation'), 'Storage/account.json')]",
     "functionsAppTemplate": "[concat(variables('linkedTemplatesLocation'), 'Web/function-app.json')]",
-    "applicationInsightsTemplate": "[concat(variables('linkedTemplatesLocation'), 'application-insights.json')]",
+    "applicationInsightsTemplate": "[concat(variables('linkedTemplatesLocation'), 'Insights/components.json')]",
     "keyVaultTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/vaults.json')]",
     "keyVaultAccessPoliciesTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/keyvaultaccesspolicies.json')]"
   },
