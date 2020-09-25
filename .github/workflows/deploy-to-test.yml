@@ -46,10 +46,10 @@ jobs:
             dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Publish Resolve Function
-        run: dotnet publish src\HexMaster.ShortLink.Resolver\HexMaster.ShortLink.Resolver.csproj --configuration Release --output ${{ env.RESOLVE_OUTPUT_PATH }}
+        run: dotnet publish src/HexMaster.ShortLink.Resolver/HexMaster.ShortLink.Resolver.csproj --configuration Release --output ${{ env.RESOLVE_OUTPUT_PATH }}
 
       - name: Publish Maintenance Function
-        run: dotnet publish src\HexMaster.ShortLink.Maintenance\HexMaster.ShortLink.Maintenance.csproj --configuration Release --output ${{ env.MAINTENANCE_OUTPUT_PATH }}
+        run: dotnet publish src/HexMaster.ShortLink.Maintenance/HexMaster.ShortLink.Maintenance.csproj --configuration Release --output ${{ env.MAINTENANCE_OUTPUT_PATH }}
 
       - name: Package Resolve functions
         uses: actions/upload-artifact@v1
@@ -68,31 +68,31 @@ jobs:
     needs: [provision-infra,compile]
 
     steps:
-        - name: Download Resolve Functions
-          uses: actions/download-artifact@v1
-          with:
-              name: resolve-functions
-              path: ${{ env.RESOLVE_OUTPUT_PATH }}
+      - name: Download Resolve Functions
+        uses: actions/download-artifact@v1
+        with:
+            name: resolve-functions
+            path: ${{ env.RESOLVE_OUTPUT_PATH }}
 
-        - name: Download Maintenance Functions
-          uses: actions/download-artifact@v1
-          with:
-              name: maintenance-functions
-              path: ${{ env.MAINTENANCE_OUTPUT_PATH }}
+      - name: Download Maintenance Functions
+        uses: actions/download-artifact@v1
+        with:
+            name: maintenance-functions
+            path: ${{ env.MAINTENANCE_OUTPUT_PATH }}
 
-        - name: "Login via Azure CLI"
-          uses: azure/login@v1
-          with:
-              creds: ${{ secrets.AZURE_CREDENTIALS_TEST }}
+      - name: "Login via Azure CLI"
+        uses: azure/login@v1
+        with:
+            creds: ${{ secrets.AZURE_CREDENTIALS_TEST }}
 
-        - name: "Deploy Resolve Functions"
-          uses: Azure/functions-action@v1
-          with:
-              app-name: 'shortlink-test-resolve-app'
-              package: ${{ env.RESOLVE_OUTPUT_PATH }}
+      - name: "Deploy Resolve Functions"
+        uses: Azure/functions-action@v1
+        with:
+            app-name: 'shortlink-test-resolve-app'
+            package: ${{ env.RESOLVE_OUTPUT_PATH }}
 
-        - name: "Deploy Maintenance Functions"
-          uses: Azure/functions-action@v1
-          with:
-              app-name: 'shortlink-test-maintenance-app'
-              package: ${{ env.MAINTENANCE_OUTPUT_PATH }}
+      - name: "Deploy Maintenance Functions"
+        uses: Azure/functions-action@v1
+        with:
+            app-name: 'shortlink-test-maintenance-app'
+            package: ${{ env.MAINTENANCE_OUTPUT_PATH }}
