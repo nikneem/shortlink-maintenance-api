@@ -17,12 +17,19 @@
     "applicationInsightsName": "[concat(variables('systemName'), '-', variables('environment'), '-appinsights')]",
     "keyVaultName": "[concat(variables('systemName'), '-', variables('environment'), '-kv')]",
     "eventHubNamespace": "[concat(variables('systemName'), '-', variables('environment'), '-eventhub')]",
-    "appConfigurationName": "[concat(variables('systemName'), '-', variables('environment'), '-config')]",
+
+    "resolveFunctionAppName": "[concat(variables('systemName'), '-', variables('environment'), '-resolve-app')]",
+    "maintenanceFunctionAppName": "[concat(variables('systemName'), '-', variables('environment'), '-maintenance-app')]",
 
     "eventHubs": ["click-events"],
 
     "storageAccountName": "[concat(variables('systemName'), variables('environment'), 'storage')]",
     "storageAccountShares": ["resolve-function", "maintenance-function"],
+
+    "secretStorageAccountConnectionString": "StorageAccountConnectionString",
+    "secretApplicationInsightsInstrumentationKey": "ApplicationInsightsInstrumentationKey",
+    "secretEventHubSender": "EventHubSenderConnectionString",
+    "secretEventHubListener": "EventHubListenerConnectionString",
 
     "linkedTemplatesLocation": "https://raw.githubusercontent.com/nikneem/shortlink-maintenance-api/main/src/HexMaster.ShortLink.Backend.Deployment/linked-templates/",
     "eventHubNamespaceTemplate": "[concat(variables('linkedTemplatesLocation'), 'EventHub/namespaces.json')]",
@@ -32,6 +39,29 @@
     "keyVaultTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/vaults.json')]",
     "keyVaultAccessPoliciesTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/keyvaultaccesspolicies.json')]"
   },
+  "functions": [
+    {
+      "namespace": "eke",
+      "members": {
+        "keyVaultReference": {
+          "parameters": [
+            {
+              "name": "keyVaultName",
+              "type": "string"
+            },
+            {
+              "name": "secretName",
+              "type": "string"
+            }
+          ],
+          "output": {
+            "type": "string",
+            "value": "[concat('@Microsoft.KeyVault(SecretUri=https://', parameters('keyVaultName'), '.vault.azure.net/secrets/', parameters('secretName'), '/)')]"
+          }
+        }
+      }
+    }
+  ],
   "resources": [
     {
       "name": "applicationInsightsDeployment",
@@ -118,7 +148,7 @@
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "2016-10-01",
-      "name": "[concat(variables('keyVaultName'), '/ApplicationInsightsInstrumentationKey')]",
+      "name": "[concat(variables('keyVaultName'), '/', variables('secretApplicationInsightsInstrumentationKey'))]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'applicationInsightsDeployment')]",
@@ -135,7 +165,7 @@
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "2016-10-01",
-      "name": "[concat(variables('keyVaultName'), '/StorageAccountConnectionString')]",
+      "name": "[concat(variables('keyVaultName'), '/', variables('secretStorageAccountConnectionString'))]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]",
@@ -152,7 +182,7 @@
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "2016-10-01",
-      "name": "[concat(variables('keyVaultName'), '/EventHubSenderConnectionString')]",
+      "name": "[concat(variables('keyVaultName'), '/', variables('secretEventHubSender'))]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'eventHubNamespace')]",
@@ -169,7 +199,7 @@
     {
       "type": "Microsoft.KeyVault/vaults/secrets",
       "apiVersion": "2016-10-01",
-      "name": "[concat(variables('keyVaultName'), '/EventHubListenerConnectionString')]",
+      "name": "[concat(variables('keyVaultName'), '/', variables('secretEventHubListener'))]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'eventHubNamespace')]",
@@ -182,8 +212,6 @@
         "value": "[reference('eventHubNamespace').outputs.EventHubListenerConnectionString.value]"
       }
     },
-
-
 
     {
       "name": "functionsAppResolver",
@@ -274,6 +302,40 @@
           "resourceId": {
             "value": "[resourceId(resourceGroup().name, 'Microsoft.Web/Sites/',  'shortlink-test-maintenance-app')]"
           }
+        }
+      }
+    },
+
+    {
+      "type": "Microsoft.Web/sites/config",
+      "name": "[concat(variables('resolveFunctionAppName'), '/web')]",
+      "apiVersion": "2018-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'functionsAppResolver')]"
+      ],
+      "properties": {
+        "appSettings": {
+          "AzureWebJobsStorage": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
+          "CloudSettings:EventHubSenderConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubSender'))]",
+          "APPINSIGHTS_INSTRUMENTATIONKEY": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretApplicationInsightsInstrumentationKey'))]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites/config",
+      "name": "[concat(variables('maintenanceFunctionAppName'), '/web')]",
+      "apiVersion": "2018-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'functionsAppResolver')]"
+      ],
+      "properties": {
+        "appSettings": {
+          "AzureWebJobsStorage": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
+          "CloudSettings:StorageConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
+          "CloudSettings:EventHubListenerConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubListener'))]",
+          "JwtBinding:Audience": "3c62e326-4f03-4b68-8190-88b2a3603894",
+          "JwtBinding:Issuer": "https://login.microsoftonline.com/922cee41-db95-4eff-8022-9b815f545dee/v2.0",
+          "APPINSIGHTS_INSTRUMENTATIONKEY": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretApplicationInsightsInstrumentationKey'))]"
         }
       }
     }

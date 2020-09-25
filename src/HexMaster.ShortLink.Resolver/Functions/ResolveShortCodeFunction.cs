@@ -19,7 +19,7 @@ namespace HexMaster.ShortLink.Resolver.Functions
         public static async Task<IActionResult> ResolveShortCode(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "{*path}")]
             HttpRequest req,
-            [EventHub(HubNames.ClickEventsHub, Connection = "CloudSettings:EventHubConnectionString")]
+            [EventHub(HubNames.ClickEventsHub, Connection = "CloudSettings:EventHubSenderConnectionString")]
             IAsyncCollector<LinkClickedMessage> outputEvents,
             [Table(TableNames.ShortLinks)] CloudTable table,
             string path,

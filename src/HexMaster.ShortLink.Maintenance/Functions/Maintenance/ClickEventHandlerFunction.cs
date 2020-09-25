@@ -13,7 +13,7 @@ namespace HexMaster.ShortLink.Maintenance.Functions.Maintenance
     {
         [FunctionName("ClickEventHandlerFunction")]
         public static async Task Run(
-            [EventHubTrigger(HubNames.ClickEventsHub, Connection = "%CloudSettings:EventHubConnectionString%")] LinkClickedMessage events, 
+            [EventHubTrigger(HubNames.ClickEventsHub, Connection = "CloudSettings:EventHubListenerConnectionString")] LinkClickedMessage events, 
             [Table(TableNames.Hits)] CloudTable table,
             ILogger log)
         {
