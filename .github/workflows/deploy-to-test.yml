@@ -28,6 +28,7 @@ jobs:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           resourceGroupName: 'shortlink-test-backend'
           template: src/HexMaster.ShortLink.Backend.Deployment/azuredeploy.json
+          parameters: src/HexMaster.ShortLink.Backend.Deployment/azuredeploy.test.parameters.json
 
   compile:
     runs-on: ubuntu-latest
