@@ -87,11 +87,11 @@
   "outputs": {
     "EventHubSenderConnectionString": {
       "type": "string",
-      "value": "[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespace'), 'GenericSender'), '2017-04-01').primaryConnectionString]"
+      "value": "[listkeys(resourceId('Microsoft.EventHub/namespaces/authorizationRules', parameters('eventHubNamespace'), 'GenericSender'), '2017-04-01').primaryConnectionString]"
     },
     "EventHubListenerConnectionString": {
       "type": "string",
-      "value": "[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespace'), 'GenericListener'), '2017-04-01').primaryConnectionString]"
+      "value": "[listkeys(resourceId('Microsoft.EventHub/namespaces/authorizationRules', parameters('eventHubNamespace'), 'GenericListener'), '2017-04-01').primaryConnectionString]"
     }
   }
 }
