@@ -308,35 +308,31 @@
 
     {
       "type": "Microsoft.Web/sites/config",
-      "name": "[concat(variables('resolveFunctionAppName'), '/web')]",
+      "name": "[concat(variables('resolveFunctionAppName'), '/appsettings')]",
       "apiVersion": "2018-11-01",
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'functionsAppResolver')]"
       ],
       "properties": {
-        "appSettings": {
           "AzureWebJobsStorage": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
           "CloudSettings:EventHubSenderConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubSender'))]",
           "APPINSIGHTS_INSTRUMENTATIONKEY": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretApplicationInsightsInstrumentationKey'))]"
         }
-      }
     },
     {
       "type": "Microsoft.Web/sites/config",
-      "name": "[concat(variables('maintenanceFunctionAppName'), '/web')]",
+      "name": "[concat(variables('maintenanceFunctionAppName'), '/appsettings')]",
       "apiVersion": "2018-11-01",
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', 'functionsAppResolver')]"
       ],
       "properties": {
-        "appSettings": {
           "AzureWebJobsStorage": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
           "CloudSettings:StorageConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
           "CloudSettings:EventHubListenerConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubListener'))]",
           "JwtBinding:Audience": "3c62e326-4f03-4b68-8190-88b2a3603894",
           "JwtBinding:Issuer": "https://login.microsoftonline.com/922cee41-db95-4eff-8022-9b815f545dee/v2.0",
           "APPINSIGHTS_INSTRUMENTATIONKEY": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretApplicationInsightsInstrumentationKey'))]"
-        }
       }
     }
   ],
