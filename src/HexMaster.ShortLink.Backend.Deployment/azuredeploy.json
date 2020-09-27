@@ -18,6 +18,9 @@
     "keyVaultName": "[concat(variables('systemName'), '-', variables('environment'), '-kv')]",
     "eventHubNamespace": "[concat(variables('systemName'), '-', variables('environment'), '-eventhub')]",
 
+    "rediCacheName": "[concat(variables('systemName'), '-', variables('environment'), '-cache')]",
+
+
     "resolveFunctionAppName": "[concat(variables('systemName'), '-', variables('environment'), '-resolve-app')]",
     "maintenanceFunctionAppName": "[concat(variables('systemName'), '-', variables('environment'), '-maintenance-app')]",
 
@@ -30,6 +33,7 @@
     "secretApplicationInsightsInstrumentationKey": "ApplicationInsightsInstrumentationKey",
     "secretEventHubSender": "EventHubSenderConnectionString",
     "secretEventHubListener": "EventHubListenerConnectionString",
+    "secretRedisCacheConnectionString": "RedisCacheConnectionString",
 
     "linkedTemplatesLocation": "https://raw.githubusercontent.com/nikneem/shortlink-maintenance-api/main/src/HexMaster.ShortLink.Backend.Deployment/linked-templates/",
     "eventHubNamespaceTemplate": "[concat(variables('linkedTemplatesLocation'), 'EventHub/namespaces.json')]",
@@ -37,7 +41,8 @@
     "functionsAppTemplate": "[concat(variables('linkedTemplatesLocation'), 'Web/function-app.json')]",
     "applicationInsightsTemplate": "[concat(variables('linkedTemplatesLocation'), 'Insights/components.json')]",
     "keyVaultTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/vaults.json')]",
-    "keyVaultAccessPoliciesTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/keyvaultaccesspolicies.json')]"
+    "keyVaultAccessPoliciesTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/keyvaultaccesspolicies.json')]",
+    "redisCacheTemplate": "[concat(variables('linkedTemplatesLocation'), 'Cache/redis.json')]"
   },
   "functions": [
     {
@@ -307,6 +312,44 @@
     },
 
     {
+      "name": "redisCache",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('redisCacheTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "cacheName": {
+            "value": "[variables('rediCacheName')]"
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2016-10-01",
+      "name": "[concat(variables('keyVaultName'), '/', variables('secretRedisCacheConnectionString'))]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'redisCache')]",
+        "[resourceId('Microsoft.Resources/deployments', 'keyVaultDeployment')]"
+      ],
+      "properties": {
+        "attributes": {
+          "enabled": true
+        },
+        "value": "[reference('redisCache').outputs.redisCacheConnectionString.value]"
+      }
+    },
+
+
+
+
+    {
       "type": "Microsoft.Web/sites/config",
       "name": "[concat(variables('resolveFunctionAppName'), '/appsettings')]",
       "apiVersion": "2018-11-01",
@@ -319,6 +362,7 @@
         "CloudSettings:StorageConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
         "CloudSettings:EventHubSenderConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubSender'))]",
         "CloudSettings:EventHubListenerConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubListener'))]",
+        "CloudSettings:RedisCacheConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretRedisCacheConnectionString'))]",
         "APPINSIGHTS_INSTRUMENTATIONKEY": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretApplicationInsightsInstrumentationKey'))]",
         "FUNCTIONS_WORKER_RUNTIME": "dotnet",
         "FUNCTIONS_EXTENSION_VERSION": "~3",
@@ -340,6 +384,7 @@
         "CloudSettings:StorageConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
         "CloudSettings:EventHubSenderConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubSender'))]",
         "CloudSettings:EventHubListenerConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubListener'))]",
+        "CloudSettings:RedisCacheConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretRedisCacheConnectionString'))]",
         "JwtBinding:Audience": "3c62e326-4f03-4b68-8190-88b2a3603894",
         "JwtBinding:Issuer": "https://login.microsoftonline.com/922cee41-db95-4eff-8022-9b815f545dee/v2.0",
         "APPINSIGHTS_INSTRUMENTATIONKEY": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretApplicationInsightsInstrumentationKey'))]",
