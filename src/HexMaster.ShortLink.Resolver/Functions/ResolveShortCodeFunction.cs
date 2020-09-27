@@ -31,7 +31,7 @@ namespace HexMaster.ShortLink.Resolver.Functions
             var now = DateTimeOffset.UtcNow;
             if (!string.IsNullOrWhiteSpace(path))
             {
-                var targetEndpoint = await _shortLinksService.Resolve(path);
+                var targetEndpoint = await _shortLinksService.ResolveAsync(path);
                 if (!string.IsNullOrWhiteSpace(targetEndpoint))
                 {
                     targetUrl = targetEndpoint;

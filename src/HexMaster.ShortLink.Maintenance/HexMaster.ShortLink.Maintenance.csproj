@@ -8,7 +8,7 @@
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="9.2.2" />
     <PackageReference Include="HexMaster.Functions.JwtBinding" Version="0.0.8" />
-    <PackageReference Include="HexMaster.ShortLink.Core" Version="20.9.27.2144" />
+    <PackageReference Include="HexMaster.ShortLink.Core" Version="20.9.27.2200" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.15.0" />
     <PackageReference Include="Microsoft.Azure.Cosmos.Table" Version="1.0.8" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />

@@ -5,13 +5,12 @@
     <UserSecretsId>54e688ae-0e45-4f03-8dc7-424eb6d5358a</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="HexMaster.ShortLink.Core" Version="20.9.27.2144" />
+    <PackageReference Include="HexMaster.ShortLink.Core" Version="20.9.27.2200" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.15.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventHubs" Version="4.1.1" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="4.0.2" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.9" />
-    <PackageReference Include="StackExchange.Redis" Version="2.1.58" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
