@@ -316,7 +316,9 @@
       ],
       "properties": {
         "AzureWebJobsStorage": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
+        "CloudSettings:StorageConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
         "CloudSettings:EventHubSenderConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubSender'))]",
+        "CloudSettings:EventHubListenerConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubListener'))]",
         "APPINSIGHTS_INSTRUMENTATIONKEY": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretApplicationInsightsInstrumentationKey'))]",
         "FUNCTIONS_WORKER_RUNTIME": "dotnet",
         "FUNCTIONS_EXTENSION_VERSION": "~3",

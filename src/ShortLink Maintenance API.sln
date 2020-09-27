@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HexMaster.ShortLink.Resolve
 EndProject
 Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "HexMaster.ShortLink.Backend.Deployment", "HexMaster.ShortLink.Backend.Deployment\HexMaster.ShortLink.Backend.Deployment.deployproj", "{1EBBA3C1-EC07-457B-A074-B4D7E3DF45A1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HexMaster.ShortLink.Core", "..\..\shortlink-core\HexMaster.ShortLink.Core\HexMaster.ShortLink.Core.csproj", "{3B327806-6689-4B55-BC45-DE218824A46E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HexMaster.ShortLink.Tests", "HexMaster.ShortLink.Tests\HexMaster.ShortLink.Tests.csproj", "{6152FEA2-8DE0-4CDE-AFA5-082B47691471}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{1EBBA3C1-EC07-457B-A074-B4D7E3DF45A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EBBA3C1-EC07-457B-A074-B4D7E3DF45A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1EBBA3C1-EC07-457B-A074-B4D7E3DF45A1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3B327806-6689-4B55-BC45-DE218824A46E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3B327806-6689-4B55-BC45-DE218824A46E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3B327806-6689-4B55-BC45-DE218824A46E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3B327806-6689-4B55-BC45-DE218824A46E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6152FEA2-8DE0-4CDE-AFA5-082B47691471}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6152FEA2-8DE0-4CDE-AFA5-082B47691471}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6152FEA2-8DE0-4CDE-AFA5-082B47691471}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6152FEA2-8DE0-4CDE-AFA5-082B47691471}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

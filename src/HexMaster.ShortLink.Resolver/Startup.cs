@@ -1,6 +1,9 @@
 ﻿using System;
+using HexMaster.ShortLink.Core.Configuration;
 using HexMaster.ShortLink.Resolver;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 namespace HexMaster.ShortLink.Resolver
@@ -9,9 +12,12 @@ namespace HexMaster.ShortLink.Resolver
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            // Configure your services here
-            Console.WriteLine("Komt hier");
-            
+            var serviceProvider = builder.Services.BuildServiceProvider();
+            var configuration = serviceProvider.GetService<IConfiguration>();
+
+
+            builder.Services.AddApplicationInsightsTelemetry();
+            builder.Services.ConfigureCore(configuration);
         }
     }
 }
