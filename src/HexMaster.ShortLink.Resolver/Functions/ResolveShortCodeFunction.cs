@@ -49,7 +49,7 @@ namespace HexMaster.ShortLink.Resolver.Functions
         private static async Task<string> GetShortLinkEntity(CloudTable table, string path, ILogger log)
         {
             log.LogInformation($"Trying to resolve short link with short code {path}");
-            var pkQuery = TableQuery.GenerateFilterCondition(PartitionKeys.ShortLinks,
+            var pkQuery = TableQuery.GenerateFilterCondition(nameof(ShortLinkEntity.PartitionKey),
                 QueryComparisons.Equal,
                 PartitionKeys.ShortLinks);
             var shortCodeQuery =
@@ -58,11 +58,9 @@ namespace HexMaster.ShortLink.Resolver.Functions
             var expirationQuery = TableQuery.GenerateFilterConditionForDate(
                 nameof(ShortLinkEntity.ExpiresOn),
                 QueryComparisons.GreaterThanOrEqual, DateTimeOffset.UtcNow);
-            
-            var query = new TableQuery<ShortLinkEntity>().Where(
-                TableQuery.CombineFilters(expirationQuery, TableOperators.And,
-                    TableQuery.CombineFilters(pkQuery, TableOperators.And, shortCodeQuery))
-            ).Take(1);
+
+            var query = new TableQuery<ShortLinkEntity>().Where(TableQuery.CombineFilters(expirationQuery, TableOperators.And,TableQuery.CombineFilters(pkQuery, TableOperators.And,
+                shortCodeQuery))).Take(1);
             var ct = new TableContinuationToken();
             var queryResult = await table.ExecuteQuerySegmentedAsync(query, ct);
             var entity = queryResult.Results.FirstOrDefault();
