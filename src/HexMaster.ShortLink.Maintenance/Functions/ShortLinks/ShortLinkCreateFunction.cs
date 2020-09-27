@@ -28,7 +28,7 @@ namespace HexMaster.ShortLink.Maintenance.Functions.ShortLinks
             {
                 _logger.LogInformation($"Incoming request to create new short link to {req}");
                 var model = await req.Content.ReadAsAsync<ShortLinkCreateDto>();
-                var createdModel = await _service.CreateAsync("someone", model);
+                var createdModel = await _service.CreateAsync(auth.Subject, model);
                 _logger.LogWarning($"Created a new ShotLink to https://4dn.me/{createdModel.ShortCode}");
                 return new CreatedResult("https://app.4dn.me", createdModel);
             }
