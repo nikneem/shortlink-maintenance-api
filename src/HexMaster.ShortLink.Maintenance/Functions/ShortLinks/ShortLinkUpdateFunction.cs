@@ -7,6 +7,7 @@ using HexMaster.ShortLink.Core.Contracts;
 using HexMaster.ShortLink.Core.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
 namespace HexMaster.ShortLink.Maintenance.Functions.ShortLinks
@@ -21,7 +22,7 @@ namespace HexMaster.ShortLink.Maintenance.Functions.ShortLinks
 
         [FunctionName("ShortLinkUpdateFunction")]
         public  async Task<IActionResult> Run(
-            [HttpTrigger( "put", Route = "shortlink/{id:guid}")] HttpRequestMessage req,
+            [HttpTrigger(AuthorizationLevel.Anonymous,  "put", Route = "shortlink/{id:guid}")] HttpRequestMessage req,
             [JwtBinding("%JwtBinding:Issuer%", "%JwtBinding:Audience%")] AuthorizedModel auth,
             Guid id)
         {

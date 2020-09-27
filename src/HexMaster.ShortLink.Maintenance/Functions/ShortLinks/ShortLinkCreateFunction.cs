@@ -8,6 +8,7 @@ using HexMaster.ShortLink.Core.Exceptions;
 using HexMaster.ShortLink.Core.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
 namespace HexMaster.ShortLink.Maintenance.Functions.ShortLinks
@@ -19,7 +20,8 @@ namespace HexMaster.ShortLink.Maintenance.Functions.ShortLinks
 
         [FunctionName("ShortLinkCreateFunction")]
         public async Task<IActionResult> Run(
-            [HttpTrigger("post", Route = "shortlinks")] HttpRequestMessage req
+            [HttpTrigger(AuthorizationLevel.Anonymous,  "post", Route = "shortlinks")] HttpRequestMessage req,
+        [JwtBinding("%JwtBinding:Issuer%", "%JwtBinding:Audience%")] AuthorizedModel auth,
             )
         {
             try
