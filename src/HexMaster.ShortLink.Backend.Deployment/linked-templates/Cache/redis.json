@@ -20,13 +20,7 @@
                     "family": "C",
                     "capacity": 0
                 },
-                "enableNonSslPort": false,
-                "redisConfiguration": {
-                    "maxclients": "256",
-                    "maxmemory-reserved": "2",
-                    "maxfragmentationmemory-reserved": "12",
-                    "maxmemory-delta": "2"
-                }
+                "enableNonSslPort": false
             }
         }
     ],
