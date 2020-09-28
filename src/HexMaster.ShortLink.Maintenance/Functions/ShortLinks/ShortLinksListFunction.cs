@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using HexMaster.Functions.JwtBinding;
 using HexMaster.Functions.JwtBinding.Model;
 using HexMaster.ShortLink.Core.Contracts;
+using HexMaster.ShortLink.Core.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -26,6 +27,11 @@ namespace HexMaster.ShortLink.Maintenance.Functions.ShortLinks
             {
                 var list = await _service.ListAsync(auth.Subject, 0, 100);
                 return new OkObjectResult(list);
+            }
+            catch (ShortLinkException shortLinkException)
+            {
+                _logger.LogWarning(shortLinkException, shortLinkException.Message);
+                return new ConflictObjectResult(shortLinkException.Errors);
             }
             catch (Exception ex)
             {

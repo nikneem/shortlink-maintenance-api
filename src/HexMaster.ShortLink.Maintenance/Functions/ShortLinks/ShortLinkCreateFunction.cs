@@ -32,10 +32,10 @@ namespace HexMaster.ShortLink.Maintenance.Functions.ShortLinks
                 _logger.LogWarning($"Created a new ShotLink to https://4dn.me/{createdModel.ShortCode}");
                 return new CreatedResult("https://app.4dn.me", createdModel);
             }
-            catch (ModelValidationException validationEx)
+            catch (ShortLinkException shortLinkException)
             {
-                _logger.LogWarning(validationEx, "Validation error occurred while trying to add a new short link");
-                return new BadRequestObjectResult(validationEx.Errors);
+                _logger.LogWarning(shortLinkException, shortLinkException.Message);
+                return new ConflictObjectResult(shortLinkException.Errors);
             }
             catch (Exception ex)
             {

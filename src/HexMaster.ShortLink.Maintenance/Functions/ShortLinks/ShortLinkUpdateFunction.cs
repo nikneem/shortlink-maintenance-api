@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using HexMaster.Functions.JwtBinding;
 using HexMaster.Functions.JwtBinding.Model;
 using HexMaster.ShortLink.Core.Contracts;
+using HexMaster.ShortLink.Core.Exceptions;
 using HexMaster.ShortLink.Core.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -31,6 +32,11 @@ namespace HexMaster.ShortLink.Maintenance.Functions.ShortLinks
                 var model = await req.Content.ReadAsAsync<ShortLinkUpdateDto>();
                  await _service.UpdateAsync(auth.Subject, id, model);
                 return new OkResult();
+            }
+            catch (ShortLinkException shortLinkException)
+            {
+                _logger.LogWarning(shortLinkException, shortLinkException.Message);
+                return new ConflictObjectResult(shortLinkException.Errors);
             }
             catch (Exception ex)
             {
