@@ -20,6 +20,8 @@
 
     "rediCacheName": "[concat(variables('systemName'), '-', variables('environment'), '-cache')]",
 
+    "resolveFunctionName": "[concat(variables('systemName'), '-', variables('environment'), '-resolve')]",
+    "maintenanceFunctionName": "[concat(variables('systemName'), '-', variables('environment'), '-maintenance')]",
 
     "resolveFunctionAppName": "[concat(variables('systemName'), '-', variables('environment'), '-resolve-app')]",
     "maintenanceFunctionAppName": "[concat(variables('systemName'), '-', variables('environment'), '-maintenance-app')]",
@@ -235,7 +237,7 @@
           "storageAccountConnectionString": {
             "value": "[reference('storageAccount').outputs.storageAccountConnectionString.value]"
           },
-          "functionsWebApp": { "value": "shortlink-test-resolve" },
+          "functionsWebApp": { "value": "[variables('resolveFunctionName')]" },
           "storageShareName": { "value": "resolve-function" }
         }
       }
@@ -258,7 +260,7 @@
           "storageAccountConnectionString": {
             "value": "[reference('storageAccount').outputs.storageAccountConnectionString.value]"
           },
-          "functionsWebApp": { "value": "shortlink-test-maintenance" },
+          "functionsWebApp": { "value": "[variables('maintenanceFunctionName')]" },
           "storageShareName": { "value": "maintenance-function" }
         }
       }
@@ -282,7 +284,7 @@
             "value": "[variables('keyvaultName')]"
           },
           "resourceId": {
-            "value": "[resourceId(resourceGroup().name, 'Microsoft.Web/Sites/',  'shortlink-test-resolve-app')]"
+            "value": "[resourceId(resourceGroup().name, 'Microsoft.Web/Sites/',  variables('resolveFunctionAppName'))]"
           }
         }
       }
@@ -305,7 +307,7 @@
             "value": "[variables('keyvaultName')]"
           },
           "resourceId": {
-            "value": "[resourceId(resourceGroup().name, 'Microsoft.Web/Sites/',  'shortlink-test-maintenance-app')]"
+            "value": "[resourceId(resourceGroup().name, 'Microsoft.Web/Sites/', variables('maintenanceFunctionAppName'))]"
           }
         }
       }
