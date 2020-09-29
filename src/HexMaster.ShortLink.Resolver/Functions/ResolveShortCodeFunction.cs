@@ -27,7 +27,7 @@ namespace HexMaster.ShortLink.Resolver.Functions
             string path,
             ILogger log)
         {
-            var targetUrl = "https://app.4dn.me/";
+            var targetUrl = "https://test-app.4dn.me/";
             var now = DateTimeOffset.UtcNow;
             if (!string.IsNullOrWhiteSpace(path))
             {

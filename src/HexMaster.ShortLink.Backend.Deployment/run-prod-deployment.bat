@@ -1,0 +1,1 @@
+az group deployment create --resource-group shortlink-prod-backend --template-file ./azuredeploy.json --parameters ./azuredeploy.prod.parameters.json --mode Complete
