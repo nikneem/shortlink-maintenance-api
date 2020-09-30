@@ -397,7 +397,7 @@
         "CloudSettings:EventHubSenderConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubSender'))]",
         "CloudSettings:EventHubListenerConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubListener'))]",
         "CloudSettings:RedisCacheConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretRedisCacheConnectionString'))]",
-        "JwtBinding:Audience": "3c62e326-4f03-4b68-8190-88b2a3603894",
+        "JwtBinding:Audience": "5e039917-1ed1-4706-bd47-1f1608c10e09",
         "JwtBinding:Issuer": "https://login.microsoftonline.com/922cee41-db95-4eff-8022-9b815f545dee/v2.0",
         "APPINSIGHTS_INSTRUMENTATIONKEY": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretApplicationInsightsInstrumentationKey'))]",
         "FUNCTIONS_WORKER_RUNTIME": "dotnet",
