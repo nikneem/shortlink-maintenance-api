@@ -247,7 +247,8 @@
             "value": "[reference('storageAccount').outputs.storageAccountConnectionString.value]"
           },
           "functionsWebApp": { "value": "[variables('resolveFunctionName')]" },
-          "storageShareName": { "value": "resolve-function" }
+          "storageShareName": { "value": "resolve-function" },
+          "sku": { "value": "[variables('resolverSku')]" }
         }
       }
     },
@@ -269,8 +270,11 @@
           "storageAccountConnectionString": {
             "value": "[reference('storageAccount').outputs.storageAccountConnectionString.value]"
           },
-          "functionsWebApp": { "value": "[variables('maintenanceFunctionName')]" },
-          "storageShareName": { "value": "maintenance-function" }
+          "functionsWebApp": {
+            "value": "[variables('maintenanceFunctionName')]"
+          },
+          "storageShareName": { "value": "maintenance-function" },
+          "sku": { "value": "[variables('maintenanceSku')]" }
         }
       }
     },
@@ -356,9 +360,6 @@
         "value": "[reference('redisCache').outputs.redisCacheConnectionString.value]"
       }
     },
-
-
-
 
     {
       "type": "Microsoft.Web/sites/config",
