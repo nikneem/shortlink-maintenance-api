@@ -7,6 +7,22 @@
     },
     "systemName": {
       "value": "shortlink"
+    },
+    "resolverSku": {
+      "value": {
+        "name": "Y1",
+        "tier": "Dynamic",
+        "family":"Y",
+        "capacity": 0
+      }
+    },
+    "maintenanceSku": {
+      "value": {
+        "name": "Y1",
+        "tier": "Dynamic",
+        "family":"Y",
+        "capacity": 0
+      }
     }
   }
 }

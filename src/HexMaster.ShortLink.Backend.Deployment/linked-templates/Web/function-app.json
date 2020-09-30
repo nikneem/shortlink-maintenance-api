@@ -4,7 +4,8 @@
   "parameters": {
     "storageAccountConnectionString": { "type": "string" },
     "functionsWebApp": { "type": "string" },
-    "storageShareName": { "type": "string" }
+    "storageShareName": { "type": "string" },
+    "sku": { "type": "object"}
   },
   "variables": {
     "functionsAppServicePlan": "[concat(parameters('functionsWebApp'), '-plan')]",
@@ -18,11 +19,11 @@
       "name": "[variables('functionsAppServicePlan')]",
       "location": "[resourceGroup().location]",
       "sku": {
-        "name": "Y1",
-        "tier": "Dynamic",
-        "size": "Y1",
-        "family": "Y",
-        "capacity": 0
+        "name": "[parameters('sku').name]",
+        "tier": "[parameters('sku').tier]",
+        "size": "[parameters('sku').name]",
+        "family": "[parameters('sku').family]",
+        "capacity": "[parameters('sku').capacity]"
       },
       "kind": "functionapp",
       "properties": {

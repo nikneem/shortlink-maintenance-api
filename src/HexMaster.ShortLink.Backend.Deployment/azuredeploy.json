@@ -8,11 +8,20 @@
     },
     "systemName": {
       "type": "string"
+    },
+    "resolverSku": {
+      "type": "object"
+    },
+    "maintenanceSku": {
+      "type": "object"
     }
   },
   "variables": {
     "environment": "[parameters('environment')]",
     "systemName": "[parameters('systemName')]",
+
+    "resolverSku": "[parameters('resolverSku')]",
+    "maintenanceSku": "[parameters('maintenanceSku')]",
 
     "applicationInsightsName": "[concat(variables('systemName'), '-', variables('environment'), '-appinsights')]",
     "keyVaultName": "[concat(variables('systemName'), '-', variables('environment'), '-kv')]",
