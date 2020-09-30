@@ -69,6 +69,7 @@
         "hyperV": false,
         "scmSiteAlsoStopped": false,
         "clientAffinityEnabled": false,
+        "alwaysOn": true,
         "clientCertEnabled": false,
         "hostNamesDisabled": false,
         "containerSize": 1536,
