@@ -13,7 +13,7 @@
         "name": "Y1",
         "tier": "Dynamic",
         "family":"Y",
-        "capacity": 0
+        "capacity": 1
       }
     },
     "maintenanceSku": {
