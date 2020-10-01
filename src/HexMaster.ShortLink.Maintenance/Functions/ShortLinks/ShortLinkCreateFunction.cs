@@ -13,16 +13,16 @@ using Microsoft.Extensions.Logging;
 
 namespace HexMaster.ShortLink.Maintenance.Functions.ShortLinks
 {
-    public  class ShortLinkCreateFunction
+    public class ShortLinkCreateFunction
     {
         private readonly IShortLinksService _service;
         private readonly ILogger<ShortLinkCreateFunction> _logger;
 
         [FunctionName("ShortLinkCreateFunction")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous,  "post", Route = "shortlinks")] HttpRequestMessage req,
-        [JwtBinding("%JwtBinding:Issuer%", "%JwtBinding:Audience%")] AuthorizedModel auth
-            )
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "shortlinks")] HttpRequestMessage req,
+            [JwtBinding("%JwtBinding:Issuer%", "%JwtBinding:Audience%")] AuthorizedModel auth
+        )
         {
             try
             {

@@ -1,0 +1,41 @@
+name: Build and Deploy TEST
+
+env:
+  RESOLVE_OUTPUT_PATH: ${{ github.workspace }}/.output/resolve
+  MAINTENANCE_OUTPUT_PATH: ${{ github.workspace }}/.output/maintenance
+  DOTNET_VERSION: "3.1.100"
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Checkout branch'
+        uses: actions/checkout@v2
+
+      - name: Setup Dotnet ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v1
+        with:
+            dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish Resolve Function
+        run: dotnet publish src/HexMaster.ShortLink.Resolver/HexMaster.ShortLink.Resolver.csproj --configuration Release --output ${{ env.RESOLVE_OUTPUT_PATH }}
+
+      - name: Publish Maintenance Function
+        run: dotnet publish src/HexMaster.ShortLink.Maintenance/HexMaster.ShortLink.Maintenance.csproj --configuration Release --output ${{ env.MAINTENANCE_OUTPUT_PATH }}
+
+      - name: Package Resolve functions
+        uses: actions/upload-artifact@v1
+        with:
+            name: resolve-functions
+            path: ${{ env.RESOLVE_OUTPUT_PATH }}
+
+      - name: Package Maintenance functions
+        uses: actions/upload-artifact@v1
+        with:
+            name: maintenance-functions
+            path: ${{ env.MAINTENANCE_OUTPUT_PATH }}
