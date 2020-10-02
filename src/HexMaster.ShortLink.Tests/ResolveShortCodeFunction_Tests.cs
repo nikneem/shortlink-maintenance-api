@@ -16,7 +16,7 @@ using NUnit.Framework;
 
 namespace HexMaster.ShortLink.Tests
 {
-    public class Tests
+    public class ResolveShortCodeFunction_Tests
     {
         [Test]
         public async Task ResolveShortCode_Success()
