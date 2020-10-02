@@ -47,8 +47,8 @@ namespace HexMaster.ShortLink.Tests
 
             // Assert
             Assert.IsInstanceOf<RedirectResult>(result);
-            var r = result as RedirectResult;
-            Assert.AreEqual(targetEndpoint, r.Url);
+            var redirectResult = result as RedirectResult;
+            Assert.AreEqual(targetEndpoint, redirectResult.Url);
         }
 
         [Test]
@@ -83,15 +83,14 @@ namespace HexMaster.ShortLink.Tests
 
             // Assert
             Assert.IsInstanceOf<RedirectResult>(result);
-            var r = result as RedirectResult;
-            Assert.AreEqual("https://app.4dn.me/", r.Url);
+            var redirectResult = result as RedirectResult;
+            Assert.AreEqual("https://app.4dn.me/", redirectResult.Url);
         }
 
         [Test]
         public async Task ResolveShortCode_Fail_CodeNotFound()
         {
             // Assemble
-            var targetEndpoint = "https://google.com";
             var context = new DefaultHttpContext();
             var request = context.Request;
             
@@ -114,8 +113,8 @@ namespace HexMaster.ShortLink.Tests
 
             // Assert
             Assert.IsInstanceOf<RedirectResult>(result);
-            var r = result as RedirectResult;
-            Assert.AreEqual("https://app.4dn.me/", r.Url);
+            var redirectResult = result as RedirectResult;
+            Assert.AreEqual("https://app.4dn.me/", redirectResult.Url);
         }
 
         [Test]
@@ -125,13 +124,10 @@ namespace HexMaster.ShortLink.Tests
         public async Task ResolveShortCode_Fail_EmptyEndpoint(string endpoint)
         {
             // Assemble
-            var targetEndpoint = "https://google.com";
             var context = new DefaultHttpContext();
             var request = context.Request;
             
             var collectorMock = new Mock<IAsyncCollector<LinkClickedMessage>>();
-
-            var entity = new ShortLinkEntity() { EndpointUrl = endpoint };
 
             var ctor = typeof(TableQuerySegment<ShortLinkEntity>)
                 .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
@@ -150,8 +146,8 @@ namespace HexMaster.ShortLink.Tests
 
             // Assert
             Assert.IsInstanceOf<RedirectResult>(result);
-            var r = result as RedirectResult;
-            Assert.AreEqual("https://app.4dn.me/", r.Url);
+            var redirectResult = result as RedirectResult;
+            Assert.AreEqual("https://app.4dn.me/", redirectResult.Url);
         }
     }
 }
