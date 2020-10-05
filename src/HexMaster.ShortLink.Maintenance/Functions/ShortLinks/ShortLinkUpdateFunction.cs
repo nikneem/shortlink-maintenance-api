@@ -24,7 +24,7 @@ namespace HexMaster.ShortLink.Maintenance.Functions.ShortLinks
         [FunctionName("ShortLinkUpdateFunction")]
         public  async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous,  "put", Route = "shortlink/{id:guid}")] HttpRequestMessage req,
-            [JwtBinding("%JwtBinding:Issuer%", "%JwtBinding:Audience%")] AuthorizedModel auth,
+            [JwtBinding] AuthorizedModel auth,
             Guid id)
         {
             try
