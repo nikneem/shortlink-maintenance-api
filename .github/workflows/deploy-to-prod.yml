@@ -10,30 +10,8 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: 'Checkout branch'
-        uses: actions/checkout@v2
-
-      - name: Setup Dotnet ${{ env.DOTNET_VERSION }}
-        uses: actions/setup-dotnet@v1
-        with:
-            dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Install dependencies
-        run: dotnet restore src
-
-      - name: Build
-        run: dotnet build --configuration Release --no-restore src
-
-      - name: Test
-        run: dotnet test --no-restore --verbosity normal src
-
   provision-infra:
     runs-on: ubuntu-latest
-    needs: [test]
 
     steps:
       - name: 'Checkout branch'
@@ -54,7 +32,6 @@ jobs:
 
   compile:
     runs-on: ubuntu-latest
-    needs: [test]
 
     steps:
       - name: 'Checkout branch'
@@ -85,7 +62,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [test,provision-infra,compile]
+    needs: [provision-infra,compile]
 
     steps:
       - name: Download Resolve Functions
