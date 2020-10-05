@@ -1,4 +1,4 @@
-name: Build and Deploy TEST
+name: Build and Deploy PROD
 
 env:
   RESOLVE_OUTPUT_PATH: ${{ github.workspace }}/.output/resolve
