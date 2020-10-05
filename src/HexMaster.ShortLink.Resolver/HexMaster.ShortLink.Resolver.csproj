@@ -5,7 +5,7 @@
     <UserSecretsId>54e688ae-0e45-4f03-8dc7-424eb6d5358a</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="HexMaster.ShortLink.Core" Version="20.10.5.928" />
+    <PackageReference Include="HexMaster.ShortLink.Core" Version="20.10.5.1235" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.15.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventHubs" Version="4.1.1" />
