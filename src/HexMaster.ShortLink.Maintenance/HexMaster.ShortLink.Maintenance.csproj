@@ -14,8 +14,8 @@
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventHubs" Version="4.1.1" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" Version="4.0.3" />
-    <PackageReference Include="Microsoft.IdentityModel.Protocols" Version="6.7.1" />
-    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.7.1" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols" Version="6.8.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.8.0" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.9" />
   </ItemGroup>
   <ItemGroup>
