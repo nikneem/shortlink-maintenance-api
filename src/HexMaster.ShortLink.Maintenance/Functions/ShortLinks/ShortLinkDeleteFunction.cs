@@ -20,7 +20,7 @@ namespace HexMaster.ShortLink.Maintenance.Functions.ShortLinks
 
         [FunctionName("ShortLinkDeleteFunction")]
         public  async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "delete", Route = "shortlink/{id:guid}")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "shortlink/{id:guid}")] HttpRequest req,
             Guid id,
             [JwtBinding] AuthorizedModel auth)
         {
