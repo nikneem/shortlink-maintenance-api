@@ -1,33 +1,48 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "parameters": {
-        "cacheName": {
-            "type": "string"
-        }
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environment": {
+      "type": "string",
+      "allowedValues": ["dev", "test", "acc", "prod"]
     },
-    "functions": [],
-    "variables": {},
-    "resources": [
-                {
-            "type": "Microsoft.Cache/Redis",
-            "apiVersion": "2019-07-01",
-            "name": "[parameters('cacheName')]",
-            "location": "West Europe",
-            "properties": {
-                "sku": {
-                    "name": "Basic",
-                    "family": "C",
-                    "capacity": 0
-                },
-                "enableNonSslPort": false
-            }
-        }
-    ],
-    "outputs": {
-        "redisCacheConnectionString": {
-            "type": "string",
-            "value":  "[concat(parameters('cacheName'), '.redis.cache.windows.net:6380,password=', listKeys(resourceId('Microsoft.Cache/Redis', parameters('cacheName')), '2015-08-01').primaryKey, ',ssl=True,abortConnect=False')]"
-        }
+    "systemName": {
+      "type": "string"
     }
+  },
+  "variables": {
+    "apiVersionVar": "[providers('Microsoft.Cache', 'Redis').apiVersions[0]]",
+    "cache-name": "[concat(parameters('systemName'), '-', parameters('environment'), '-cache')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Cache/Redis",
+      "name": "[variables('cache-name')]",
+      "apiVersion": "[variables('apiVersionVar')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "sku": {
+          "name": "Basic",
+          "family": "C",
+          "capacity": 0
+        },
+        "enableNonSslPort": false
+      }
+    }
+  ],
+  "outputs": {
+    "RedisCacheConnectionString": {
+      "type": "string",
+      "value": "[concat(variables('cache-name'), '.redis.cache.windows.net:6380,password=', listKeys(resourceId('Microsoft.Cache/Redis', variables('cache-name')), variables('apiVersionVar')).primaryKey, ',ssl=True,abortConnect=False')]"
+    },
+    "Config": {
+      "type": "array",
+      "value": [
+        {
+          "name": "RedisCacheConnectionString",
+          "value": "[concat(variables('cache-name'), '.redis.cache.windows.net:6380,password=', listKeys(resourceId('Microsoft.Cache/Redis', variables('cache-name')), variables('apiVersionVar')).primaryKey, ',ssl=True,abortConnect=False')]"
+        }
+      ]
+    }
+  }
 }

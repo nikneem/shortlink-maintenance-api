@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environment": {
+      "type": "string",
+      "allowedValues": ["dev", "test", "acc", "prod"]
+    },
+    "systemName": {
+      "type": "string"
+    },
+    "eventHubs": {
+      "type": "array"
+    }
+  },
+  "variables": {
+    "apiVersionVar": "[providers('Microsoft.EventHub', 'namespaces').apiVersions[0]]",
+    "eventhub-namespace": "[concat(parameters('systemName'), '-', parameters('environment'), '-keyvlt')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.EventHub/namespaces/eventhubs",
+      "apiVersion": "[variables('apiVersionVar')]",
+      "name": "[concat(variables('eventhub-namespace'), '/', parameters('eventHubs')[copyIndex()])]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "messageRetentionInDays": 1,
+        "partitionCount": 2,
+        "status": "Active"
+      },
+      "copy": {
+        "name": "eventHubsCopy",
+        "count": "[length(parameters('eventHubs'))]"
+      }
+    }
+  ]
+}

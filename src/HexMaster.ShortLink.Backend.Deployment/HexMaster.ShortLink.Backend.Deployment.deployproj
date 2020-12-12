@@ -29,8 +29,14 @@
       <Visible>False</Visible>
     </None>
     <Content Include="Deploy-AzureResourceGroup.ps1" />
-    <None Include="linked-templates\eventhub-namespace.json" />
-    <None Include="linked-templates\eventhub.json" />
+    <None Include="linked-templates\Cache\redis.json" />
+    <None Include="linked-templates\EventHub\namespaces.json" />
+    <None Include="linked-templates\Insights\components.json" />
+    <None Include="linked-templates\KeyVault\keyvaultaccesspolicies.json" />
+    <None Include="linked-templates\KeyVault\vaults.json" />
+    <None Include="linked-templates\Storage\account.json" />
+    <None Include="linked-templates\Web\function-app.json" />
+    <None Include="linked-templates\Web\sites.json" />
   </ItemGroup>
   <Target Name="GetReferenceAssemblyPaths" />
 </Project>

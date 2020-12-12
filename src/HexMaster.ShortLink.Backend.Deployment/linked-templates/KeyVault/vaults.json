@@ -2,37 +2,33 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "keyVaultName": { "type": "string" }
+    "environment": {
+      "type": "string",
+      "allowedValues": ["dev", "test", "acc", "prod"]
+    },
+    "systemName": {
+      "type": "string"
+    }
   },
-  "variables": {},
+  "variables": {
+    "apiVersionVar": "[providers('Microsoft.KeyVault', 'vaults').apiVersions[0]]",
+    "keyvault-name": "[concat(parameters('systemName'), '-', parameters('environment'), '-keyvlt')]"
+  },
   "resources": [
     {
       "type": "Microsoft.KeyVault/vaults",
-      "apiVersion": "2016-10-01",
-      "name": "[parameters('keyVaultName')]",
+      "apiVersion": "[variables('apiVersionVar')]",
+      "name": "[variables('keyvault-name')]",
       "location": "[resourceGroup().location]",
       "properties": {
         "sku": {
           "family": "A",
           "name": "Standard"
         },
-        "tenantId": "922cee41-db95-4eff-8022-9b815f545dee",
-        "accessPolicies": [
-          {
-            "tenantId": "922cee41-db95-4eff-8022-9b815f545dee",
-            "objectId": "de55357b-c155-4de7-916f-ff12755cf5fb",
-            "permissions": {
-              "keys": ["All"],
-              "secrets": ["All"]
-            }
-          }
-        ],
-        "enabledForDeployment": false,
-        "enabledForDiskEncryption": false,
-        "enabledForTemplateDeployment": false,
+        "tenantId": "[subscription().tenantId]",
+        "accessPolicies": [],
         "enableSoftDelete": true
       }
     }
-  ],
-  "outputs": {}
+  ]
 }

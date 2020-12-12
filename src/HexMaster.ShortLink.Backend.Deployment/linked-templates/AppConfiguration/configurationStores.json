@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#", 
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environment": {
+      "type": "string",
+      "allowedValues": [ "dev", "test", "acc", "prod" ]
+    },
+    "system": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "apiVersionVar": "[providers('Microsoft.AppConfiguration', 'configurationStores').apiVersions[0]]",
+    "app-configuration-name": "[concat(parameters('system'), '-', parameters('environment'), '-config')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.AppConfiguration/configurationStores",
+      "apiVersion": "2020-07-01-preview",
+      "name": "[variables('app-configuration-name')]",
+      "location": "westeurope",
+      "sku": {
+        "name": "standard"
+      },
+      "properties": {
+        "encryption": {}
+      }
+    }
+  ],
+  "outputs": {
+    "AppConfigEndpoint": {
+      "type": "string",
+      "value": "[reference(variables('app-configuration-name')).endpoint]"
+    },
+    "AppConfigKeys": {
+      "type": "Array",
+      "value": "[listkeys(resourceId('Microsoft.AppConfiguration/configurationStores', variables('app-configuration-name')), variables('apiVersionVar')).value]"
+    },
+    "Config": {
+      "type": "object",
+      "value": {
+        "AppConfigEndpoint": "[[reference(variables('app-configuration-name')).endpoint]",
+        "AppConfigKeys": "[listkeys(resourceId('Microsoft.AppConfiguration/configurationStores', variables('app-configuration-name')), variables('apiVersionVar')).value]"
+      }
+    }
+  }
+}

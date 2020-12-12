@@ -2,19 +2,23 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "eventHubNamespace": {
-      "type": "string"
+    "environment": {
+      "type": "string",
+      "allowedValues": ["dev", "test", "acc", "prod"]
     },
-    "eventHubs": {
-      "type": "array"
+    "systemName": {
+      "type": "string"
     }
   },
-  "variables": {},
+  "variables": {
+    "apiVersionVar": "[providers('Microsoft.EventHub', 'namespaces').apiVersions[0]]",
+    "eventhub-namespace": "[concat(parameters('systemName'), '-', parameters('environment'), '-keyvlt')]"
+  },
   "resources": [
     {
       "type": "Microsoft.EventHub/namespaces",
-      "apiVersion": "2018-01-01-preview",
-      "name": "[parameters('eventHubNamespace')]",
+      "name": "[variables('eventhub-namespace')]",
+      "apiVersion": "[variables('apiVersionVar')]",
       "location": "[resourceGroup().location]",
       "sku": {
         "name": "Basic",
@@ -31,10 +35,10 @@
     {
       "type": "Microsoft.EventHub/namespaces/AuthorizationRules",
       "apiVersion": "2017-04-01",
-      "name": "[concat(parameters('eventHubNamespace'), '/RootManageSharedAccessKey')]",
+      "name": "[concat(variables('eventhub-namespace'), '/RootManageSharedAccessKey')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespace'))]"
+        "[resourceId('Microsoft.EventHub/namespaces', variables('eventhub-namespace'))]"
       ],
       "properties": {
         "rights": ["Listen", "Manage", "Send"]
@@ -43,10 +47,10 @@
     {
       "type": "Microsoft.EventHub/namespaces/AuthorizationRules",
       "apiVersion": "2017-04-01",
-      "name": "[concat(parameters('eventHubNamespace'), '/GenericSender')]",
+      "name": "[concat(variables('eventhub-namespace'), '/GenericSender')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespace'))]"
+        "[resourceId('Microsoft.EventHub/namespaces', variables('eventhub-namespace'))]"
       ],
       "properties": {
         "rights": ["Send"]
@@ -55,43 +59,37 @@
     {
       "type": "Microsoft.EventHub/namespaces/AuthorizationRules",
       "apiVersion": "2017-04-01",
-      "name": "[concat(parameters('eventHubNamespace'), '/GenericListener')]",
+      "name": "[concat(variables('eventhub-namespace'), '/GenericListener')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespace'))]"
+        "[resourceId('Microsoft.EventHub/namespaces', variables('eventhub-namespace'))]"
       ],
       "properties": {
         "rights": ["Listen"]
-      }
-    },
-
-    {
-      "type": "Microsoft.EventHub/namespaces/eventhubs",
-      "apiVersion": "2017-04-01",
-      "name": "[concat(parameters('eventHubNamespace'), '/', parameters('eventHubs')[copyIndex()])]",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespace'))]"
-      ],
-      "properties": {
-        "messageRetentionInDays": 1,
-        "partitionCount": 2,
-        "status": "Active"
-      },
-      "copy": {
-        "name": "eventHubsCopy",
-        "count": "[length(parameters('eventHubs'))]"
       }
     }
   ],
   "outputs": {
     "EventHubSenderConnectionString": {
       "type": "string",
-      "value": "[listkeys(resourceId('Microsoft.EventHub/namespaces/authorizationRules', parameters('eventHubNamespace'), 'GenericSender'), '2017-04-01').primaryConnectionString]"
+      "value": "[listkeys(resourceId('Microsoft.EventHub/namespaces/authorizationRules', variables('eventhub-namespace'), 'GenericSender'), '2017-04-01').primaryConnectionString]"
     },
     "EventHubListenerConnectionString": {
       "type": "string",
-      "value": "[listkeys(resourceId('Microsoft.EventHub/namespaces/authorizationRules', parameters('eventHubNamespace'), 'GenericListener'), '2017-04-01').primaryConnectionString]"
+      "value": "[listkeys(resourceId('Microsoft.EventHub/namespaces/authorizationRules', variables('eventhub-namespace'), 'GenericListener'), '2017-04-01').primaryConnectionString]"
+    },
+    "Config": {
+      "type": "array",
+      "value": [
+        {
+          "name": "EventHubSenderConnectionString",
+          "value": "[listkeys(resourceId('Microsoft.EventHub/namespaces/authorizationRules', variables('eventhub-namespace'), 'GenericSender'), '2017-04-01').primaryConnectionString]"
+        },
+        {
+          "name": "EventHubListenerConnectionString",
+          "value": "[listkeys(resourceId('Microsoft.EventHub/namespaces/authorizationRules', variables('eventhub-namespace'), 'GenericListener'), '2017-04-01').primaryConnectionString]"
+        }
+      ]
     }
   }
 }
