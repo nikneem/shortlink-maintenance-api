@@ -22,7 +22,7 @@ namespace HexMaster.ShortLink.Resolver.Functions
 
         [FunctionName("ResolveShortCodeFunction")]
         public async Task<IActionResult> ResolveShortCode(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "{path?}")]
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "{path}")]
             HttpRequest req,
             [EventHub(HubNames.ClickEventsHub, Connection = "CloudSettings:EventHubSenderConnectionString")]
             IAsyncCollector<LinkClickedMessage> outputEvents,
