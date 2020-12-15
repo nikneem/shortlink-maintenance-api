@@ -244,62 +244,62 @@
     },
 
     // Adding secrets to the keyvault
-    {
-      "type": "Microsoft.Resources/deployments",
-      "name": "[concat('keyVaultSecret', copyIndex())]",
-      "apiVersion": "2019-08-01",
-      "dependsOn": [
-          "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]",
-          "[resourceId('Microsoft.Resources/deployments', 'applicationInsights')]",
-          "[resourceId('Microsoft.Resources/deployments', 'configurationStore')]",
-          "[resourceId('Microsoft.Resources/deployments', 'keyvault')]",
-          "[resourceId('Microsoft.Resources/deployments', 'eventHubNamespace')]",
-          "[resourceId('Microsoft.Resources/deployments', 'redisCache')]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('keyVaultSecretTemplate')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "environment": {
-            "value": "[variables('environment')]"
-          },
-          "systemName": {
-            "value": "[variables('systemName')]"
-          },
-          "name": {
-            "value": "[union(
-              reference('storageAccount').outputs.Config.value,
-              reference('applicationInsights').outputs.Config.value,
-              reference('configurationStore').outputs.Config.value,
-              reference('eventHubNamespace').outputs.Config.value,
-              reference('redisCache').outputs.Config.value
-              )[copyIndex()].name]"
-          },
-          "value": {
-            "value": "[union(
-              reference('storageAccount').outputs.Config.value,
-              reference('applicationInsights').outputs.Config.value,
-              reference('configurationStore').outputs.Config.value,
-              reference('eventHubNamespace').outputs.Config.value,
-              reference('redisCache').outputs.Config.value
-              )[copyIndex()].value]"
-          }
-        }
-      },
-      "copy": {
-        "name": "appsettingscopy",
-        "count": "[length(union(
-              reference('storageAccount').outputs.Config.value,
-              reference('applicationInsights').outputs.Config.value,
-              reference('configurationStore').outputs.Config.value,
-              reference('eventHubNamespace').outputs.Config.value,
-              reference('redisCache').outputs.Config.value
-              ))]"
-      }
-    },
+    // {
+    //   "type": "Microsoft.Resources/deployments",
+    //   "name": "[concat('keyVaultSecret', copyIndex())]",
+    //   "apiVersion": "2019-08-01",
+    //   "dependsOn": [
+    //       "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]",
+    //       "[resourceId('Microsoft.Resources/deployments', 'applicationInsights')]",
+    //       "[resourceId('Microsoft.Resources/deployments', 'configurationStore')]",
+    //       "[resourceId('Microsoft.Resources/deployments', 'keyvault')]",
+    //       "[resourceId('Microsoft.Resources/deployments', 'eventHubNamespace')]",
+    //       "[resourceId('Microsoft.Resources/deployments', 'redisCache')]"
+    //   ],
+    //   "properties": {
+    //     "mode": "Incremental",
+    //     "templateLink": {
+    //       "uri": "[variables('keyVaultSecretTemplate')]",
+    //       "contentVersion": "1.0.0.0"
+    //     },
+    //     "parameters": {
+    //       "environment": {
+    //         "value": "[variables('environment')]"
+    //       },
+    //       "systemName": {
+    //         "value": "[variables('systemName')]"
+    //       },
+    //       "name": {
+    //         "value": "[union(
+    //           reference('storageAccount').outputs.Config.value,
+    //           reference('applicationInsights').outputs.Config.value,
+    //           reference('configurationStore').outputs.Config.value,
+    //           reference('eventHubNamespace').outputs.Config.value,
+    //           reference('redisCache').outputs.Config.value
+    //           )[copyIndex()].name]"
+    //       },
+    //       "value": {
+    //         "value": "[union(
+    //           reference('storageAccount').outputs.Config.value,
+    //           reference('applicationInsights').outputs.Config.value,
+    //           reference('configurationStore').outputs.Config.value,
+    //           reference('eventHubNamespace').outputs.Config.value,
+    //           reference('redisCache').outputs.Config.value
+    //           )[copyIndex()].value]"
+    //       }
+    //     }
+    //   },
+    //   "copy": {
+    //     "name": "appsettingscopy",
+    //     "count": "[length(union(
+    //           reference('storageAccount').outputs.Config.value,
+    //           reference('applicationInsights').outputs.Config.value,
+    //           reference('configurationStore').outputs.Config.value,
+    //           reference('eventHubNamespace').outputs.Config.value,
+    //           reference('redisCache').outputs.Config.value
+    //           ))]"
+    //   }
+    // },
 
 
     // App service plans
