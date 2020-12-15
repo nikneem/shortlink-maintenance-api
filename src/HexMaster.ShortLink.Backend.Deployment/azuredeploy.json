@@ -31,8 +31,6 @@
     "keyVaultName": "[concat(variables('systemName'), '-', variables('environment'), '-kv')]",
     "eventHubNamespace": "[concat(variables('systemName'), '-', variables('environment'), '-eventhub')]",
 
-    "rediCacheName": "[concat(variables('systemName'), '-', variables('environment'), '-cache')]",
-
     "resolveFunctionName": "[concat(variables('systemName'), '-', variables('environment'), '-resolve')]",
     "maintenanceFunctionName": "[concat(variables('systemName'), '-', variables('environment'), '-maintenance')]",
 
@@ -236,8 +234,11 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "cacheName": {
-            "value": "[variables('rediCacheName')]"
+          "environment": {
+            "value": "[variables('environment')]"
+          },
+          "systemName": {
+            "value": "[variables('systemName')]"
           }
         }
       }
@@ -301,52 +302,6 @@
     //   }
     // },
 
-
-    // App service plans
-    {
-      "name": "resolverAppServicePlan",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-08-01",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('appServicePlanTemplate')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "environment": {
-            "value": "[variables('environment')]"
-          },
-          "systemName": {
-            "value": "[variables('resolverSystemName')]"
-          },
-          "kind": "functionapp",
-          "skuInfo": "[variables('resolverSku')]"
-        }
-      }
-    },
-    {
-      "name": "maintenanceAppServicePlan",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-08-01",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('appServicePlanTemplate')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "environment": {
-            "value": "[variables('environment')]"
-          },
-          "systemName": {
-            "value": "[variables('maintenanceSystemName')]"
-          },
-          "kind": "functionapp",
-          "skuInfo": "[variables('maintenanceSku')]"
-        }
-      }
-    },
 
 
     // App service plans and app services
