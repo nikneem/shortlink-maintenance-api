@@ -14,7 +14,7 @@
     }
   },
   "variables": {
-    "apiVersionVar": "2017-04-01",
+    "apiVersionVar": "[providers('Microsoft.EventHub', 'namespaces/eventhubs').apiVersions[0]]",
     "eventhub-namespace": "[concat(parameters('systemName'), '-', parameters('environment'), '-eventhub')]"
   },
   "resources": [
