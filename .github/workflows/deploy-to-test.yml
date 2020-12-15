@@ -5,7 +5,9 @@ env:
   MAINTENANCE_OUTPUT_PATH: ${{ github.workspace }}/.output/maintenance
   DOTNET_VERSION: "3.1.100"
 
-on: [workflow_dispatch]
+on:
+  push:
+    branches: [ test ]
 
 jobs:
   provision-infra:
