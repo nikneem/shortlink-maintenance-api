@@ -14,14 +14,14 @@
     }
   },
   "variables": {
-    "apiVersionVar": "[providers('Microsoft.EventHub', 'namespaces').apiVersions[0]]",
+    "apiVersionVar": "2017-04-01",
     "eventhub-namespace": "[concat(parameters('systemName'), '-', parameters('environment'), '-eventhub')]"
   },
   "resources": [
     {
       "type": "Microsoft.EventHub/namespaces/eventhubs",
-      "apiVersion": "[variables('apiVersionVar')]",
       "name": "[concat(variables('eventhub-namespace'), '/', parameters('eventHubs')[copyIndex()])]",
+      "apiVersion": "[variables('apiVersionVar')]",
       "location": "[resourceGroup().location]",
       "properties": {
         "messageRetentionInDays": 1,
