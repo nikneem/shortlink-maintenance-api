@@ -6,13 +6,13 @@
       "type": "string",
       "allowedValues": [ "dev", "test", "acc", "prod" ]
     },
-    "system": {
+    "systemName": {
       "type": "string"
     }
   },
   "variables": {
     "apiVersionVar": "[providers('Microsoft.AppConfiguration', 'configurationStores').apiVersions[0]]",
-    "app-configuration-name": "[concat(parameters('system'), '-', parameters('environment'), '-config')]"
+    "app-configuration-name": "[concat(parameters('systemName'), '-', parameters('environment'), '-config')]"
   },
   "resources": [
     {

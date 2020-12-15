@@ -31,8 +31,6 @@
     "keyVaultName": "[concat(variables('systemName'), '-', variables('environment'), '-kv')]",
     "eventHubNamespace": "[concat(variables('systemName'), '-', variables('environment'), '-eventhub')]",
 
-    "rediCacheName": "[concat(variables('systemName'), '-', variables('environment'), '-cache')]",
-
     "resolveFunctionName": "[concat(variables('systemName'), '-', variables('environment'), '-resolve')]",
     "maintenanceFunctionName": "[concat(variables('systemName'), '-', variables('environment'), '-maintenance')]",
 
@@ -236,117 +234,74 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "cacheName": {
-            "value": "[variables('rediCacheName')]"
+          "environment": {
+            "value": "[variables('environment')]"
+          },
+          "systemName": {
+            "value": "[variables('systemName')]"
           }
         }
       }
     },
 
     // Adding secrets to the keyvault
-    {
-      "type": "Microsoft.Resources/deployments",
-      "name": "[concat('keyVaultSecret', copyIndex())]",
-      "apiVersion": "2019-08-01",
-      "dependsOn": [
-          "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]",
-          "[resourceId('Microsoft.Resources/deployments', 'applicationInsights')]",
-          "[resourceId('Microsoft.Resources/deployments', 'configurationStore')]",
-          "[resourceId('Microsoft.Resources/deployments', 'keyvault')]",
-          "[resourceId('Microsoft.Resources/deployments', 'eventHubNamespace')]",
-          "[resourceId('Microsoft.Resources/deployments', 'redisCache')]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('keyVaultSecretTemplate')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "environment": {
-            "value": "[variables('environment')]"
-          },
-          "systemName": {
-            "value": "[variables('systemName')]"
-          },
-          "name": {
-            "value": "[union(
-              reference('storageAccount').outputs.Config.value,
-              reference('applicationInsights').outputs.Config.value,
-              reference('configurationStore').outputs.Config.value,
-              reference('eventHubNamespace').outputs.Config.value,
-              reference('redisCache').outputs.Config.value
-              )[copyIndex()].name]"
-          },
-          "value": {
-            "value": "[union(
-              reference('storageAccount').outputs.Config.value,
-              reference('applicationInsights').outputs.Config.value,
-              reference('configurationStore').outputs.Config.value,
-              reference('eventHubNamespace').outputs.Config.value,
-              reference('redisCache').outputs.Config.value
-              )[copyIndex()].value]"
-          }
-        }
-      },
-      "copy": {
-        "name": "appsettingscopy",
-        "count": "[length(union(
-              reference('storageAccount').outputs.Config.value,
-              reference('applicationInsights').outputs.Config.value,
-              reference('configurationStore').outputs.Config.value,
-              reference('eventHubNamespace').outputs.Config.value,
-              reference('redisCache').outputs.Config.value
-              ))]"
-      }
-    },
+    // {
+    //   "type": "Microsoft.Resources/deployments",
+    //   "name": "[concat('keyVaultSecret', copyIndex())]",
+    //   "apiVersion": "2019-08-01",
+    //   "dependsOn": [
+    //       "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]",
+    //       "[resourceId('Microsoft.Resources/deployments', 'applicationInsights')]",
+    //       "[resourceId('Microsoft.Resources/deployments', 'configurationStore')]",
+    //       "[resourceId('Microsoft.Resources/deployments', 'keyvault')]",
+    //       "[resourceId('Microsoft.Resources/deployments', 'eventHubNamespace')]",
+    //       "[resourceId('Microsoft.Resources/deployments', 'redisCache')]"
+    //   ],
+    //   "properties": {
+    //     "mode": "Incremental",
+    //     "templateLink": {
+    //       "uri": "[variables('keyVaultSecretTemplate')]",
+    //       "contentVersion": "1.0.0.0"
+    //     },
+    //     "parameters": {
+    //       "environment": {
+    //         "value": "[variables('environment')]"
+    //       },
+    //       "systemName": {
+    //         "value": "[variables('systemName')]"
+    //       },
+    //       "name": {
+    //         "value": "[union(
+    //           reference('storageAccount').outputs.Config.value,
+    //           reference('applicationInsights').outputs.Config.value,
+    //           reference('configurationStore').outputs.Config.value,
+    //           reference('eventHubNamespace').outputs.Config.value,
+    //           reference('redisCache').outputs.Config.value
+    //           )[copyIndex()].name]"
+    //       },
+    //       "value": {
+    //         "value": "[union(
+    //           reference('storageAccount').outputs.Config.value,
+    //           reference('applicationInsights').outputs.Config.value,
+    //           reference('configurationStore').outputs.Config.value,
+    //           reference('eventHubNamespace').outputs.Config.value,
+    //           reference('redisCache').outputs.Config.value
+    //           )[copyIndex()].value]"
+    //       }
+    //     }
+    //   },
+    //   "copy": {
+    //     "name": "appsettingscopy",
+    //     "count": "[length(union(
+    //           reference('storageAccount').outputs.Config.value,
+    //           reference('applicationInsights').outputs.Config.value,
+    //           reference('configurationStore').outputs.Config.value,
+    //           reference('eventHubNamespace').outputs.Config.value,
+    //           reference('redisCache').outputs.Config.value
+    //           ))]"
+    //   }
+    // },
 
-
-    // App service plans
-    {
-      "name": "resolverAppServicePlan",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-08-01",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('appServicePlanTemplate')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "environment": {
-            "value": "[variables('environment')]"
-          },
-          "systemName": {
-            "value": "[variables('resolverSystemName')]"
-          },
-          "kind": "functionapp",
-          "skuInfo": "[variables('resolverSku')]"
-        }
-      }
-    },
-    {
-      "name": "resolverAppServicePlan",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-08-01",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('appServicePlanTemplate')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "environment": {
-            "value": "[variables('environment')]"
-          },
-          "systemName": {
-            "value": "[variables('maintenanceSystemName')]"
-          },
-          "kind": "functionapp",
-          "skuInfo": "[variables('maintenanceSku')]"
-        }
-      }
-    },
 
 
     // App service plans and app services
@@ -436,7 +391,7 @@
       }
     },
     {
-      "name": "resolverAppService",
+      "name": "maintenanceAppService",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-08-01",
       "dependsOn": [
