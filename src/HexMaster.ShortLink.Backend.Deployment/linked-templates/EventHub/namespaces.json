@@ -12,7 +12,7 @@
   },
   "variables": {
     "apiVersionVar": "[providers('Microsoft.EventHub', 'namespaces').apiVersions[0]]",
-    "eventhub-namespace": "[concat(parameters('systemName'), '-', parameters('environment'), '-keyvlt')]"
+    "eventhub-namespace": "[concat(parameters('systemName'), '-', parameters('environment'), '-eventhub')]"
   },
   "resources": [
     {
