@@ -436,7 +436,7 @@
       }
     },
     {
-      "name": "resolverAppService",
+      "name": "maintenanceAppService",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-08-01",
       "dependsOn": [
