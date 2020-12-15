@@ -11,16 +11,12 @@
     "resolverSku": {
       "value": {
         "name": "Y1",
-        "tier": "Dynamic",
-        "family":"Y",
         "capacity": 1
       }
     },
     "maintenanceSku": {
       "value": {
         "name": "Y1",
-        "tier": "Dynamic",
-        "family":"Y",
         "capacity": 0
       }
     }

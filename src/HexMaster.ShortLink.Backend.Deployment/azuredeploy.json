@@ -20,6 +20,10 @@
     "environment": "[parameters('environment')]",
     "systemName": "[parameters('systemName')]",
 
+    "resolverSystemName": "[concat(variables('systemName'), '-resolver')]",
+    "maintenanceSystemName": "[concat(variables('systemName'), '-maintenance')]",
+    "letsencryptSystemName": "[concat(variables('systemName'), '-letsencrypt')]",
+
     "resolverSku": "[parameters('resolverSku')]",
     "maintenanceSku": "[parameters('maintenanceSku')]",
 
@@ -37,9 +41,6 @@
 
     "eventHubs": ["click-events"],
 
-    "storageAccountName": "[concat(variables('systemName'), variables('environment'), 'storage')]",
-    "storageAccountShares": ["resolve-function", "maintenance-function"],
-
     "secretStorageAccountConnectionString": "StorageAccountConnectionString",
     "secretApplicationInsightsInstrumentationKey": "ApplicationInsightsInstrumentationKey",
     "secretEventHubSender": "EventHubSenderConnectionString",
@@ -47,13 +48,18 @@
     "secretRedisCacheConnectionString": "RedisCacheConnectionString",
 
     "linkedTemplatesLocation": "https://raw.githubusercontent.com/nikneem/shortlink-maintenance-api/main/src/HexMaster.ShortLink.Backend.Deployment/linked-templates/",
-    "eventHubNamespaceTemplate": "[concat(variables('linkedTemplatesLocation'), 'EventHub/namespaces.json')]",
     "storageAccountTemplate": "[concat(variables('linkedTemplatesLocation'), 'Storage/account.json')]",
-    "functionsAppTemplate": "[concat(variables('linkedTemplatesLocation'), 'Web/function-app.json')]",
     "applicationInsightsTemplate": "[concat(variables('linkedTemplatesLocation'), 'Insights/components.json')]",
+    "configurationStore": "[concat(variables('linkedTemplatesLocation'), 'AppConfiguration/configurationStores.json')]",
+    "eventHubNamespaceTemplate": "[concat(variables('linkedTemplatesLocation'), 'EventHub/namespaces.json')]",
+    "eventHubTemplate": "[concat(variables('linkedTemplatesLocation'), 'EventHub/namespaces/eventhubs.json')]",
     "keyVaultTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/vaults.json')]",
-    "keyVaultAccessPoliciesTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/keyvaultaccesspolicies.json')]",
-    "redisCacheTemplate": "[concat(variables('linkedTemplatesLocation'), 'Cache/redis.json')]"
+    "keyVaultSecretTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/vaults/secrets.json')]",
+    "redisCacheTemplate": "[concat(variables('linkedTemplatesLocation'), 'Cache/redis.json')]",
+
+    "appServicePlanTemplate": "[concat(variables('linkedTemplatesLocation'), 'Web/serverfarms.json')]",
+    "appServiceTemplate": "[concat(variables('linkedTemplatesLocation'), 'Web/sites.json')]",
+    "keyVaultAccessPoliciesTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/keyvaultaccesspolicies.json')]"
   },
   "functions": [
     {
@@ -79,49 +85,12 @@
     }
   ],
   "resources": [
-    {
-      "name": "applicationInsightsDeployment",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-08-01",
-      "dependsOn": [],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('applicationInsightsTemplate')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "applicationInsightsName": {
-            "value": "[variables('applicationInsightsName')]"
-          }
-        }
-      }
-    },
 
-    {
-      "name": "keyVaultDeployment",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-08-01",
-      "dependsOn": [],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('keyVaultTemplate')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "keyVaultName": {
-            "value": "[variables('keyVaultName')]"
-          }
-        }
-      }
-    },
-
+    // Storage Account
     {
       "name": "storageAccount",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-08-01",
-      "dependsOn": [],
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -129,16 +98,83 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "storageAccountName": {
-            "value": "[variables('storageAccountName')]"
+          "environment": {
+            "value": "[variables('environment')]"
           },
-          "shares": {
-            "value": "[variables('storageAccountShares')]"
+          "systemName": {
+            "value": "[variables('systemName')]"
           }
         }
       }
     },
 
+    // Application Insights
+    {
+      "name": "applicationInsights",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('applicationInsightsTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "systemName": {
+            "value": "[variables('systemName')]"
+          },
+          "environment": {
+            "value": "[variables('environment')]"
+          }
+        }
+      }
+    },
+
+    // App configuration store
+    {
+      "name": "configurationStore",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('configurationStore')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "environment": {
+            "value": "[variables('environment')]"
+          },
+          "systemName": {
+            "value": "[variables('systemName')]"
+          }
+        }
+      }
+    },
+
+    // KeyVault
+    {
+      "name": "keyvault",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-10-01",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('keyVaultTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "environment": {
+            "value": "[variables('environment')]"
+          },
+          "systemName": {
+            "value": "[variables('systemName')]"
+          }
+        }
+      }
+    },
+
+    // Event hub namespace and event hubs
     {
       "name": "eventHubNamespace",
       "type": "Microsoft.Resources/deployments",
@@ -151,8 +187,34 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "eventHubNamespace": {
-            "value": "[variables('eventHubNamespace')]"
+          "environment": {
+            "value": "[variables('environment')]"
+          },
+          "systemName": {
+            "value": "[variables('systemName')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "eventHubs",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'eventHubNamespace')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('eventHubTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "environment": {
+            "value": "[variables('environment')]"
+          },
+          "systemName": {
+            "value": "[variables('systemName')]"
           },
           "eventHubs": {
             "value": "[variables('eventHubs')]"
@@ -161,171 +223,7 @@
       }
     },
 
-    {
-      "type": "Microsoft.KeyVault/vaults/secrets",
-      "apiVersion": "2016-10-01",
-      "name": "[concat(variables('keyVaultName'), '/', variables('secretApplicationInsightsInstrumentationKey'))]",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'applicationInsightsDeployment')]",
-        "[resourceId('Microsoft.Resources/deployments', 'keyVaultDeployment')]"
-      ],
-      "properties": {
-        "attributes": {
-          "enabled": true
-        },
-        "value": "[reference('applicationInsightsDeployment').outputs.ApplicationInsightsInstrumentationKey.value]"
-      }
-    },
-
-    {
-      "type": "Microsoft.KeyVault/vaults/secrets",
-      "apiVersion": "2016-10-01",
-      "name": "[concat(variables('keyVaultName'), '/', variables('secretStorageAccountConnectionString'))]",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]",
-        "[resourceId('Microsoft.Resources/deployments', 'keyVaultDeployment')]"
-      ],
-      "properties": {
-        "attributes": {
-          "enabled": true
-        },
-        "value": "[reference('storageAccount').outputs.storageAccountConnectionString.value]"
-      }
-    },
-
-    {
-      "type": "Microsoft.KeyVault/vaults/secrets",
-      "apiVersion": "2016-10-01",
-      "name": "[concat(variables('keyVaultName'), '/', variables('secretEventHubSender'))]",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'eventHubNamespace')]",
-        "[resourceId('Microsoft.Resources/deployments', 'keyVaultDeployment')]"
-      ],
-      "properties": {
-        "attributes": {
-          "enabled": true
-        },
-        "value": "[reference('eventHubNamespace').outputs.EventHubSenderConnectionString.value]"
-      }
-    },
-
-    {
-      "type": "Microsoft.KeyVault/vaults/secrets",
-      "apiVersion": "2016-10-01",
-      "name": "[concat(variables('keyVaultName'), '/', variables('secretEventHubListener'))]",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'eventHubNamespace')]",
-        "[resourceId('Microsoft.Resources/deployments', 'keyVaultDeployment')]"
-      ],
-      "properties": {
-        "attributes": {
-          "enabled": true
-        },
-        "value": "[reference('eventHubNamespace').outputs.EventHubListenerConnectionString.value]"
-      }
-    },
-
-    {
-      "name": "functionsAppResolver",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-08-01",
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('functionsAppTemplate')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "storageAccountConnectionString": {
-            "value": "[reference('storageAccount').outputs.storageAccountConnectionString.value]"
-          },
-          "functionsWebApp": { "value": "[variables('resolveFunctionName')]" },
-          "storageShareName": { "value": "resolve-function" },
-          "sku": { "value": "[variables('resolverSku')]" }
-        }
-      }
-    },
-
-    {
-      "name": "functionsAppMaintenance",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-08-01",
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('functionsAppTemplate')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "storageAccountConnectionString": {
-            "value": "[reference('storageAccount').outputs.storageAccountConnectionString.value]"
-          },
-          "functionsWebApp": {
-            "value": "[variables('maintenanceFunctionName')]"
-          },
-          "storageShareName": { "value": "maintenance-function" },
-          "sku": { "value": "[variables('maintenanceSku')]" }
-        }
-      }
-    },
-
-    {
-      "name": "functionAppResolverKeyVaultAccessPolicies",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-08-01",
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'functionsAppResolver')]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('keyVaultAccessPoliciesTemplate')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "keyVaultName": {
-            "value": "[variables('keyvaultName')]"
-          },
-          "resourceId": {
-            "value": "[resourceId(resourceGroup().name, 'Microsoft.Web/Sites/',  variables('resolveFunctionAppName'))]"
-          }
-        }
-      }
-    },
-    {
-      "name": "functionAppMaintenanceKeyVaultAccessPolicies",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-08-01",
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'functionsAppMaintenance')]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('keyVaultAccessPoliciesTemplate')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "keyVaultName": {
-            "value": "[variables('keyvaultName')]"
-          },
-          "resourceId": {
-            "value": "[resourceId(resourceGroup().name, 'Microsoft.Web/Sites/', variables('maintenanceFunctionAppName'))]"
-          }
-        }
-      }
-    },
-
+    // Azure cache for Redis
     {
       "name": "redisCache",
       "type": "Microsoft.Resources/deployments",
@@ -344,70 +242,323 @@
         }
       }
     },
+
+    // Adding secrets to the keyvault
     {
-      "type": "Microsoft.KeyVault/vaults/secrets",
-      "apiVersion": "2016-10-01",
-      "name": "[concat(variables('keyVaultName'), '/', variables('secretRedisCacheConnectionString'))]",
-      "location": "[resourceGroup().location]",
+      "type": "Microsoft.Resources/deployments",
+      "name": "[concat('keyVaultSecret', copyIndex())]",
+      "apiVersion": "2019-08-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'redisCache')]",
-        "[resourceId('Microsoft.Resources/deployments', 'keyVaultDeployment')]"
+          "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]",
+          "[resourceId('Microsoft.Resources/deployments', 'applicationInsights')]",
+          "[resourceId('Microsoft.Resources/deployments', 'configurationStore')]",
+          "[resourceId('Microsoft.Resources/deployments', 'keyvault')]",
+          "[resourceId('Microsoft.Resources/deployments', 'eventHubNamespace')]",
+          "[resourceId('Microsoft.Resources/deployments', 'redisCache')]"
       ],
       "properties": {
-        "attributes": {
-          "enabled": true
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('keyVaultSecretTemplate')]",
+          "contentVersion": "1.0.0.0"
         },
-        "value": "[reference('redisCache').outputs.redisCacheConnectionString.value]"
+        "parameters": {
+          "environment": {
+            "value": "[variables('environment')]"
+          },
+          "systemName": {
+            "value": "[variables('systemName')]"
+          },
+          "name": {
+            "value": "[union(
+              reference('storageAccount').outputs.Config.value,
+              reference('applicationInsights').outputs.Config.value,
+              reference('configurationStore').outputs.Config.value,
+              reference('eventHubNamespace').outputs.Config.value,
+              reference('redisCache').outputs.Config.value
+              )[copyIndex()].name]"
+          },
+          "value": {
+            "value": "[union(
+              reference('storageAccount').outputs.Config.value,
+              reference('applicationInsights').outputs.Config.value,
+              reference('configurationStore').outputs.Config.value,
+              reference('eventHubNamespace').outputs.Config.value,
+              reference('redisCache').outputs.Config.value
+              )[copyIndex()].value]"
+          }
+        }
+      },
+      "copy": {
+        "name": "appsettingscopy",
+        "count": "[length(union(
+              reference('storageAccount').outputs.Config.value,
+              reference('applicationInsights').outputs.Config.value,
+              reference('configurationStore').outputs.Config.value,
+              reference('eventHubNamespace').outputs.Config.value,
+              reference('redisCache').outputs.Config.value
+              ))]"
       }
     },
 
+
+    // App service plans
     {
-      "type": "Microsoft.Web/sites/config",
-      "name": "[concat(variables('resolveFunctionAppName'), '/appsettings')]",
-      "apiVersion": "2018-11-01",
-      "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'functionsAppResolver')]",
-        "[resourceId('Microsoft.Resources/deployments', 'functionAppResolverKeyVaultAccessPolicies')]"
-      ],
+      "name": "resolverAppServicePlan",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
       "properties": {
-        "AzureWebJobsStorage": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
-        "CloudSettings:StorageConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
-        "CloudSettings:EventHubSenderConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubSender'))]",
-        "CloudSettings:EventHubListenerConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubListener'))]",
-        "CloudSettings:RedisCacheConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretRedisCacheConnectionString'))]",
-        "APPINSIGHTS_INSTRUMENTATIONKEY": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretApplicationInsightsInstrumentationKey'))]",
-        "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-        "FUNCTIONS_EXTENSION_VERSION": "~3",
-        "WEBSITE_CONTENTSHARE": "resolve-function",
-        "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
-        "WEBSITE_RUN_FROM_PACKAGE": "1"
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('appServicePlanTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "environment": {
+            "value": "[variables('environment')]"
+          },
+          "systemName": {
+            "value": "[variables('resolverSystemName')]"
+          },
+          "kind": "functionapp",
+          "skuInfo": "[variables('resolverSku')]"
+        }
       }
     },
     {
-      "type": "Microsoft.Web/sites/config",
-      "name": "[concat(variables('maintenanceFunctionAppName'), '/appsettings')]",
-      "apiVersion": "2018-11-01",
+      "name": "resolverAppServicePlan",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('appServicePlanTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "environment": {
+            "value": "[variables('environment')]"
+          },
+          "systemName": {
+            "value": "[variables('maintenanceSystemName')]"
+          },
+          "kind": "functionapp",
+          "skuInfo": "[variables('maintenanceSku')]"
+        }
+      }
+    },
+
+
+    // App service plans and app services
+    {
+      "name": "resolverAppPlan",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
       "dependsOn": [
-        "[resourceId('Microsoft.Resources/deployments', 'functionsAppMaintenance')]",
-        "[resourceId('Microsoft.Resources/deployments', 'functionAppMaintenanceKeyVaultAccessPolicies')]"
+        "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]"
       ],
       "properties": {
-        "AzureWebJobsStorage": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
-        "CloudSettings:StorageConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
-        "CloudSettings:EventHubSenderConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubSender'))]",
-        "CloudSettings:EventHubListenerConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubListener'))]",
-        "CloudSettings:RedisCacheConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretRedisCacheConnectionString'))]",
-        "JwtBinding:Audience": "5e039917-1ed1-4706-bd47-1f1608c10e09",
-        "JwtBinding:Issuer": "https://login.microsoftonline.com/922cee41-db95-4eff-8022-9b815f545dee/v2.0",
-        "JwtBinding:IssuerPattern": "https://login.microsoftonline.com/(?<tenant>[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})/v2.0",
-        "APPINSIGHTS_INSTRUMENTATIONKEY": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretApplicationInsightsInstrumentationKey'))]",
-        "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-        "FUNCTIONS_EXTENSION_VERSION": "~3",
-        "WEBSITE_CONTENTSHARE": "maintenance-function",
-        "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
-        "WEBSITE_RUN_FROM_PACKAGE": "1"
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('appServicePlanTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "environment":{
+            "value": "[variables('environment')]"
+          },
+          "systemName":{
+            "value": "[variables('resolverSystemName')]"
+          },
+          "skuInfo":{
+            "value": "[variables('resolverSku')]"
+          },
+          "kind":{
+            "value": "functionapp"
+          }
+        }
+      }
+    },
+    {
+      "name": "maintenanceAppPlan",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('appServicePlanTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "environment":{
+            "value": "[variables('environment')]"
+          },
+          "systemName":{
+            "value": "[variables('maintenanceSystemName')]"
+          },
+          "skuInfo":{
+            "value": "[variables('maintenanceSku')]"
+          },
+          "kind":{
+            "value": "functionapp"
+          }        
+        }
+      }
+    },
+    {
+      "name": "resolverAppService",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]",
+        "[resourceId('Microsoft.Resources/deployments', 'resolverAppPlan')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('appServiceTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "environment":{
+            "value": "[variables('environment')]"
+          },
+          "systemName":{
+            "value": "[variables('resolverSystemName')]"
+          },
+          "kind":{
+            "value": "functionapp"
+          }
+        }
+      }
+    },
+    {
+      "name": "resolverAppService",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]",
+        "[resourceId('Microsoft.Resources/deployments', 'maintenanceAppPlan')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('appServiceTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "environment":{
+            "value": "[variables('environment')]"
+          },
+          "systemName":{
+            "value": "[variables('maintenanceSystemName')]"
+          },
+          "kind":{
+            "value": "functionapp"
+          }
+        }
       }
     }
+
+    // {
+    //   "name": "functionAppResolverKeyVaultAccessPolicies",
+    //   "type": "Microsoft.Resources/deployments",
+    //   "apiVersion": "2019-08-01",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.Resources/deployments', 'functionsAppResolver')]"
+    //   ],
+    //   "properties": {
+    //     "mode": "Incremental",
+    //     "templateLink": {
+    //       "uri": "[variables('keyVaultAccessPoliciesTemplate')]",
+    //       "contentVersion": "1.0.0.0"
+    //     },
+    //     "parameters": {
+    //       "keyVaultName": {
+    //         "value": "[variables('keyvaultName')]"
+    //       },
+    //       "resourceId": {
+    //         "value": "[resourceId(resourceGroup().name, 'Microsoft.Web/Sites/',  variables('resolveFunctionAppName'))]"
+    //       }
+    //     }
+    //   }
+    // },
+    // {
+    //   "name": "functionAppMaintenanceKeyVaultAccessPolicies",
+    //   "type": "Microsoft.Resources/deployments",
+    //   "apiVersion": "2019-08-01",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.Resources/deployments', 'functionsAppMaintenance')]"
+    //   ],
+    //   "properties": {
+    //     "mode": "Incremental",
+    //     "templateLink": {
+    //       "uri": "[variables('keyVaultAccessPoliciesTemplate')]",
+    //       "contentVersion": "1.0.0.0"
+    //     },
+    //     "parameters": {
+    //       "keyVaultName": {
+    //         "value": "[variables('keyvaultName')]"
+    //       },
+    //       "resourceId": {
+    //         "value": "[resourceId(resourceGroup().name, 'Microsoft.Web/Sites/', variables('maintenanceFunctionAppName'))]"
+    //       }
+    //     }
+    //   }
+    // },
+
+
+
+    // {
+    //   "type": "Microsoft.Web/sites/config",
+    //   "name": "[concat(variables('resolveFunctionAppName'), '/appsettings')]",
+    //   "apiVersion": "2018-11-01",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.Resources/deployments', 'functionsAppResolver')]",
+    //     "[resourceId('Microsoft.Resources/deployments', 'functionAppResolverKeyVaultAccessPolicies')]"
+    //   ],
+    //   "properties": {
+    //     "AzureWebJobsStorage": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
+    //     "CloudSettings:StorageConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
+    //     "CloudSettings:EventHubSenderConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubSender'))]",
+    //     "CloudSettings:EventHubListenerConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubListener'))]",
+    //     "CloudSettings:RedisCacheConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretRedisCacheConnectionString'))]",
+    //     "APPINSIGHTS_INSTRUMENTATIONKEY": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretApplicationInsightsInstrumentationKey'))]",
+    //     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    //     "FUNCTIONS_EXTENSION_VERSION": "~3",
+    //     "WEBSITE_CONTENTSHARE": "resolve-function",
+    //     "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
+    //     "WEBSITE_RUN_FROM_PACKAGE": "1"
+    //   }
+    // },
+    // {
+    //   "type": "Microsoft.Web/sites/config",
+    //   "name": "[concat(variables('maintenanceFunctionAppName'), '/appsettings')]",
+    //   "apiVersion": "2018-11-01",
+    //   "dependsOn": [
+    //     "[resourceId('Microsoft.Resources/deployments', 'functionsAppMaintenance')]",
+    //     "[resourceId('Microsoft.Resources/deployments', 'functionAppMaintenanceKeyVaultAccessPolicies')]"
+    //   ],
+    //   "properties": {
+    //     "AzureWebJobsStorage": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
+    //     "CloudSettings:StorageConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
+    //     "CloudSettings:EventHubSenderConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubSender'))]",
+    //     "CloudSettings:EventHubListenerConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretEventHubListener'))]",
+    //     "CloudSettings:RedisCacheConnectionString": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretRedisCacheConnectionString'))]",
+    //     "JwtBinding:Audience": "5e039917-1ed1-4706-bd47-1f1608c10e09",
+    //     "JwtBinding:Issuer": "https://login.microsoftonline.com/922cee41-db95-4eff-8022-9b815f545dee/v2.0",
+    //     "JwtBinding:IssuerPattern": "https://login.microsoftonline.com/(?<tenant>[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})/v2.0",
+    //     "APPINSIGHTS_INSTRUMENTATIONKEY": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretApplicationInsightsInstrumentationKey'))]",
+    //     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    //     "FUNCTIONS_EXTENSION_VERSION": "~3",
+    //     "WEBSITE_CONTENTSHARE": "maintenance-function",
+    //     "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "[eke.keyVaultReference(variables('keyVaultName'), variables('secretStorageAccountConnectionString'))]",
+    //     "WEBSITE_RUN_FROM_PACKAGE": "1"
+    //   }
+    // }
   ],
   "outputs": {}
 }

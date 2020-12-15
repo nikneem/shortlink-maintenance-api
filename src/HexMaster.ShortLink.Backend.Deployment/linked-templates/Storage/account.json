@@ -2,69 +2,36 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "storageAccountName": {
-      "type": "string"
+    "environment": {
+      "type": "string",
+      "allowedValues": ["dev", "test", "acc", "prod"]
     },
-    "shares": {
-      "type": "array"
+    "systemName": {
+      "type": "string"
     }
   },
   "variables": {
-    "storageAccountSku": "Standard_RAGRS",
-    "storageAccountApiVersion": "2019-06-01"
+    "apiVersionVar": "[providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]]",
+    "storage-account-name": "[concat(parameters('systemName'), parameters('environment'), 'storage')]",
+    "storageAccountSku": "Standard_LRS"
   },
   "resources": [
     {
       "type": "Microsoft.Storage/storageAccounts",
-      "apiVersion": "[variables('storageAccountApiVersion')]",
-      "name": "[parameters('storageAccountName')]",
+      "apiVersion": "[variables('apiVersionVar')]",
+      "name": "[variables('storage-account-name')]",
       "location": "[resourceGroup().location]",
       "sku": {
         "name": "[variables('storageAccountSku')]"
       },
       "kind": "StorageV2",
       "resources": []
-    },
-
-    {
-      "type": "Microsoft.Storage/storageAccounts/fileServices",
-      "apiVersion": "[variables('storageAccountApiVersion')]",
-      "name": "[concat(parameters('storageAccountName'), '/default')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
-      ],
-      "sku": {
-        "name": "Standard_RAGRS",
-        "tier": "Standard"
-      },
-      "properties": {
-        "cors": {
-          "corsRules": []
-        }
-      }
-    },
-    
-    {
-      "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
-      "apiVersion": "[variables('storageAccountApiVersion')]",
-      "name": "[concat(parameters('storageAccountName'), '/default/',  parameters('shares')[copyIndex()])]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts/fileServices', parameters('storageAccountName'), 'default')]"
-      ],
-      "properties": {
-        "shareQuota": 5120
-      },
-      "copy": {
-        "name": "sharesCopyFunction",
-        "count": "[length(parameters('shares'))]"
-      }
     }
   ],
   "outputs": {
-    "storageAccountConnectionString": {
+    "ConnectionString": {
       "type": "string",
-      "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), variables('storageAccountApiVersion')).keys[0].value)]"
+      "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storage-account-name'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storage-account-name')), variables('apiVersionVar')).keys[0].value)]"
     }
   }
 }

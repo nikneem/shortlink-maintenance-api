@@ -2,17 +2,24 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "applicationInsightsName": {
+    "environment": {
+      "type": "string",
+      "allowedValues": ["dev", "test", "acc", "prod"]
+    },
+    "systemName": {
       "type": "string"
     }
   },
-  "variables": {},
+  "variables": {
+    "apiVersionVar": "[providers('Microsoft.Insights', 'Components').apiVersions[0]]",
+    "app-insights-name": "[concat(parameters('systemName'), '-', parameters('environment'), '-insights')]"
+  },
   "resources": [
     {
       "type": "microsoft.insights/components",
-      "apiVersion": "2018-05-01-preview",
-      "name": "[parameters('applicationInsightsName')]",
-      "location": "westeurope",
+      "apiVersion": "[variables('apiVersionVar')]",
+      "name": "[variables('app-insights-name')]",
+      "location": "[resourceGroup().location]",
       "kind": "web",
       "properties": {
         "Application_Type": "web",
@@ -23,9 +30,15 @@
     }
   ],
   "outputs": {
-    "ApplicationInsightsInstrumentationKey": {
-        "value": "[reference(resourceId('Microsoft.Insights/components', parameters('applicationInsightsName')), '2014-04-01').InstrumentationKey]",
-        "type": "string"
+    "InstrumentationKey": {
+      "value": "[reference(resourceId('Microsoft.Insights/components', variables('app-insights-name')), variables('apiVersionVar')).InstrumentationKey]",
+      "type": "string"
+    },
+    "Config": {
+      "type": "object",
+      "value": {
+        "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', variables('app-insights-name')), variables('apiVersionVar')).InstrumentationKey]"
+      }
     }
   }
 }
