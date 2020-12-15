@@ -7,7 +7,7 @@ env:
 
 on:
   push:
-    branches: [ test ]
+    branches: [ test, main ]
 
 jobs:
   provision-infra:
