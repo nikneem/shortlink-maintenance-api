@@ -57,32 +57,35 @@
 
     "appServicePlanTemplate": "[concat(variables('linkedTemplatesLocation'), 'Web/serverfarms.json')]",
     "appServiceTemplate": "[concat(variables('linkedTemplatesLocation'), 'Web/sites.json')]",
-    "keyVaultAccessPoliciesTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/keyvaultaccesspolicies.json')]"
+    "keyVaultAccessPoliciesTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/vauls/accessPolicies.json')]",
+    "keyVaultSecretsTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/vauls/secrets.json')]"
+
+
   },
-  "functions": [
+  "functions": [],
+  "resources": [
+
+    // KeyVault
     {
-      "namespace": "eke",
-      "members": {
-        "keyVaultReference": {
-          "parameters": [
-            {
-              "name": "keyVaultName",
-              "type": "string"
-            },
-            {
-              "name": "secretName",
-              "type": "string"
-            }
-          ],
-          "output": {
-            "type": "string",
-            "value": "[concat('@Microsoft.KeyVault(SecretUri=https://', parameters('keyVaultName'), '.vault.azure.net/secrets/', parameters('secretName'), '/)')]"
+      "name": "keyvault",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-10-01",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('keyVaultTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "environment": {
+            "value": "[variables('environment')]"
+          },
+          "systemName": {
+            "value": "[variables('systemName')]"
           }
         }
       }
-    }
-  ],
-  "resources": [
+    },
 
     // Storage Account
     {
@@ -105,6 +108,36 @@
         }
       }
     },
+        {
+      "name": "storageAccountSecret",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]",
+        "[resourceId('Microsoft.Resources/deployments', 'keyvault')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('keyVaultsSecretsLinkedTemplateUrl')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "keyVault": {
+            "value": "[variables('keyvault-name')]"
+          },
+          "name": {
+            "value": "AzureWebJobsStorage"
+          },
+          "value": {
+            "value": "[reference('storageAccount').outputs.ConnectionString.value]"
+          }
+        }
+      }
+    },
+
+
+
 
     // Application Insights
     {
@@ -150,27 +183,7 @@
       }
     },
 
-    // KeyVault
-    {
-      "name": "keyvault",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-10-01",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('keyVaultTemplate')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "environment": {
-            "value": "[variables('environment')]"
-          },
-          "systemName": {
-            "value": "[variables('systemName')]"
-          }
-        }
-      }
-    },
+
 
     // Event hub namespace and event hubs
     {
@@ -244,10 +257,10 @@
       }
     },
 
-    // Adding secrets to the keyvault
+    // // Adding secrets to the keyvault
     // {
     //   "type": "Microsoft.Resources/deployments",
-    //   "name": "[concat('keyVaultSecret', copyIndex())]",
+    //   "name": "[concat('keyVaultSecret', union(reference('storageAccount').outputs.Config.value,reference('applicationInsights').outputs.Config.value,reference('configurationStore').outputs.Config.value,reference('eventHubNamespace').outputs.Config.value,reference('redisCache').outputs.Config.value)[copyIndex()].name)]",
     //   "apiVersion": "2019-08-01",
     //   "dependsOn": [
     //       "[resourceId('Microsoft.Resources/deployments', 'storageAccount')]",
@@ -271,13 +284,7 @@
     //         "value": "[variables('systemName')]"
     //       },
     //       "name": {
-    //         "value": "[union(
-    //           reference('storageAccount').outputs.Config.value,
-    //           reference('applicationInsights').outputs.Config.value,
-    //           reference('configurationStore').outputs.Config.value,
-    //           reference('eventHubNamespace').outputs.Config.value,
-    //           reference('redisCache').outputs.Config.value
-    //           )[copyIndex()].name]"
+    //         "value": "[union(reference('storageAccount').outputs.Config.value,reference('applicationInsights').outputs.Config.value,reference('configurationStore').outputs.Config.value,reference('eventHubNamespace').outputs.Config.value,reference('redisCache').outputs.Config.value)[copyIndex()].name]"
     //       },
     //       "value": {
     //         "value": "[union(
