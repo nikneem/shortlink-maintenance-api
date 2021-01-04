@@ -27,8 +27,9 @@
     "resolverSku": "[parameters('resolverSku')]",
     "maintenanceSku": "[parameters('maintenanceSku')]",
 
+    "keyVaultName": "[concat(variables('systemName'), '-', variables('environment'), '-keyvlt')]",
+
     "applicationInsightsName": "[concat(variables('systemName'), '-', variables('environment'), '-appinsights')]",
-    "keyVaultName": "[concat(variables('systemName'), '-', variables('environment'), '-kv')]",
     "eventHubNamespace": "[concat(variables('systemName'), '-', variables('environment'), '-eventhub')]",
 
     "resolveFunctionName": "[concat(variables('systemName'), '-', variables('environment'), '-resolve')]",
@@ -57,14 +58,11 @@
 
     "appServicePlanTemplate": "[concat(variables('linkedTemplatesLocation'), 'Web/serverfarms.json')]",
     "appServiceTemplate": "[concat(variables('linkedTemplatesLocation'), 'Web/sites.json')]",
-    "keyVaultAccessPoliciesTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/vauls/accessPolicies.json')]",
-    "keyVaultSecretsTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/vauls/secrets.json')]"
-
-
+    "keyVaultAccessPoliciesTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/vaults/accessPolicies.json')]",
+    "keyVaultSecretsTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/vaults/secrets.json')]"
   },
   "functions": [],
   "resources": [
-
     // KeyVault
     {
       "name": "keyvault",
@@ -108,7 +106,7 @@
         }
       }
     },
-        {
+    {
       "name": "storageAccountSecret",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2019-08-01",
@@ -119,12 +117,12 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[variables('keyVaultsSecretsLinkedTemplateUrl')]",
+          "uri": "[variables('keyVaultSecretsTemplate')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
           "keyVault": {
-            "value": "[variables('keyvault-name')]"
+            "value": "[variables('keyVaultName')]"
           },
           "name": {
             "value": "AzureWebJobsStorage"
@@ -135,9 +133,6 @@
         }
       }
     },
-
-
-
 
     // Application Insights
     {
@@ -156,6 +151,33 @@
           },
           "environment": {
             "value": "[variables('environment')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "applicationInsightsSecret",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'applicationInsights')]",
+        "[resourceId('Microsoft.Resources/deployments', 'keyvault')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('keyVaultSecretsTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "keyVault": {
+            "value": "[variables('keyVaultName')]"
+          },
+          "name": {
+            "value": "ApplicationInsightsInstumentationKey"
+          },
+          "value": {
+            "value": "[reference('applicationInsights').outputs.InstrumentationKey.value]"
           }
         }
       }
@@ -183,8 +205,6 @@
       }
     },
 
-
-
     // Event hub namespace and event hubs
     {
       "name": "eventHubNamespace",
@@ -207,6 +227,61 @@
         }
       }
     },
+    {
+      "name": "eventHubNamespaceSenderSecret",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'eventHubNamespace')]",
+        "[resourceId('Microsoft.Resources/deployments', 'keyvault')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('keyVaultSecretsTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "keyVault": {
+            "value": "[variables('keyVaultName')]"
+          },
+          "name": {
+            "value": "EventHubSenderConnectionString"
+          },
+          "value": {
+            "value": "[reference('redisCache').outputs.EventHubSenderConnectionString.value]"
+          }
+        }
+      }
+    },
+    {
+      "name": "eventHubNamespaceListenerSecret",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'eventHubNamespace')]",
+        "[resourceId('Microsoft.Resources/deployments', 'keyvault')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('keyVaultSecretsTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "keyVault": {
+            "value": "[variables('keyVaultName')]"
+          },
+          "name": {
+            "value": "EventHubListenerConnectionString"
+          },
+          "value": {
+            "value": "[reference('redisCache').outputs.EventHubListenerConnectionString.value]"
+          }
+        }
+      }
+    },
+
     {
       "name": "eventHubs",
       "type": "Microsoft.Resources/deployments",
@@ -252,6 +327,33 @@
           },
           "systemName": {
             "value": "[variables('systemName')]"
+          }
+        }
+      }
+    },
+    {
+      "name": "redisCacheSecret",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'redisCache')]",
+        "[resourceId('Microsoft.Resources/deployments', 'keyvault')]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('keyVaultSecretsTemplate')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "keyVault": {
+            "value": "[variables('keyVaultName')]"
+          },
+          "name": {
+            "value": "RedisCacheConnectionString"
+          },
+          "value": {
+            "value": "[reference('redisCache').outputs.RedisCacheConnectionString.value]"
           }
         }
       }
@@ -309,8 +411,6 @@
     //   }
     // },
 
-
-
     // App service plans and app services
     {
       "name": "resolverAppPlan",
@@ -326,16 +426,16 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "environment":{
+          "environment": {
             "value": "[variables('environment')]"
           },
-          "systemName":{
+          "systemName": {
             "value": "[variables('resolverSystemName')]"
           },
-          "skuInfo":{
+          "skuInfo": {
             "value": "[variables('resolverSku')]"
           },
-          "kind":{
+          "kind": {
             "value": "functionapp"
           }
         }
@@ -355,18 +455,18 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "environment":{
+          "environment": {
             "value": "[variables('environment')]"
           },
-          "systemName":{
+          "systemName": {
             "value": "[variables('maintenanceSystemName')]"
           },
-          "skuInfo":{
+          "skuInfo": {
             "value": "[variables('maintenanceSku')]"
           },
-          "kind":{
+          "kind": {
             "value": "functionapp"
-          }        
+          }
         }
       }
     },
@@ -385,13 +485,13 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "environment":{
+          "environment": {
             "value": "[variables('environment')]"
           },
-          "systemName":{
+          "systemName": {
             "value": "[variables('resolverSystemName')]"
           },
-          "kind":{
+          "kind": {
             "value": "functionapp"
           }
         }
@@ -412,13 +512,13 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "environment":{
+          "environment": {
             "value": "[variables('environment')]"
           },
-          "systemName":{
+          "systemName": {
             "value": "[variables('maintenanceSystemName')]"
           },
-          "kind":{
+          "kind": {
             "value": "functionapp"
           }
         }
@@ -471,8 +571,6 @@
     //     }
     //   }
     // },
-
-
 
     // {
     //   "type": "Microsoft.Web/sites/config",
