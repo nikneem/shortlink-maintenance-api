@@ -50,6 +50,7 @@
     "storageAccountTemplate": "[concat(variables('linkedTemplatesLocation'), 'Storage/account.json')]",
     "applicationInsightsTemplate": "[concat(variables('linkedTemplatesLocation'), 'Insights/components.json')]",
     "configurationStore": "[concat(variables('linkedTemplatesLocation'), 'AppConfiguration/configurationStores.json')]",
+    "configurationStoreKeyValue": "[concat(variables('linkedTemplatesLocation'), 'AppConfiguration/configurationStores/keyValues.json')]",
     "eventHubNamespaceTemplate": "[concat(variables('linkedTemplatesLocation'), 'EventHub/namespaces.json')]",
     "eventHubTemplate": "[concat(variables('linkedTemplatesLocation'), 'EventHub/namespaces/eventhubs.json')]",
     "keyVaultTemplate": "[concat(variables('linkedTemplatesLocation'), 'KeyVault/vaults.json')]",
@@ -183,28 +184,6 @@
       }
     },
 
-    // App configuration store
-    {
-      "name": "configurationStore",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2019-08-01",
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('configurationStore')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "environment": {
-            "value": "[variables('environment')]"
-          },
-          "systemName": {
-            "value": "[variables('systemName')]"
-          }
-        }
-      }
-    },
-
     // Event hub namespace and event hubs
     {
       "name": "eventHubNamespace",
@@ -249,7 +228,7 @@
             "value": "EventHubSenderConnectionString"
           },
           "value": {
-            "value": "[reference('redisCache').outputs.EventHubSenderConnectionString.value]"
+            "value": "[reference('eventHubNamespace').outputs.EventHubSenderConnectionString.value]"
           }
         }
       }
@@ -276,7 +255,7 @@
             "value": "EventHubListenerConnectionString"
           },
           "value": {
-            "value": "[reference('redisCache').outputs.EventHubListenerConnectionString.value]"
+            "value": "[reference('eventHubNamespace').outputs.EventHubListenerConnectionString.value]"
           }
         }
       }
@@ -354,6 +333,61 @@
           },
           "value": {
             "value": "[reference('redisCache').outputs.RedisCacheConnectionString.value]"
+          }
+        }
+      }
+    },
+
+
+        // App configuration store
+    {
+      "name": "configurationStore",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('configurationStore')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "environment": {
+            "value": "[variables('environment')]"
+          },
+          "systemName": {
+            "value": "[variables('systemName')]"
+          }
+        }
+      }
+    },
+        {
+      "name": "secretConfigurations",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-08-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'storageAccountSecret')]",
+        "[resourceId('Microsoft.Resources/deployments', 'applicationInsightsSecret')]"
+
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[variables('configurationStoreKeyValue')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "system": {
+            "value": "[parameters('systemName')]"
+          },
+          "environment": {
+            "value": "[parameters('environment')]"
+          },
+          "settings": {
+            "value": "[union(reference('redisCacheSecret').outputs.Config.value,
+            reference('eventHubNamespaceListenerSecret').outputs.Config.value,
+            reference('eventHubNamespaceSenderSecret').outputs.Config.value,
+            reference('applicationInsightsSecret').outputs.Config.value,
+            reference('storageAccountSecret').outputs.Config.value)]"
           }
         }
       }

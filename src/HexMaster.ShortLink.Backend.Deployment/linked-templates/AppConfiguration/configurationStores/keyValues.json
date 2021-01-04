@@ -1,0 +1,40 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "environment": {
+        "type": "string",
+        "allowedValues": ["dev", "test", "acc", "prod"]
+      },
+      "system": {
+        "type": "string"
+      },
+      "settings": {
+        "type": "array",
+        "defaultValue": []
+      }
+    },
+    "functions": [],
+    "variables": {
+      "app-configuration-name": "[concat(parameters('system'), '-', parameters('environment'), '-config')]"
+    },
+    "resources": [
+      {
+        "type": "Microsoft.AppConfiguration/configurationStores/keyValues",
+        "apiVersion": "2020-07-01-preview",
+        "dependsOn": [],
+        "name": "[concat(variables('app-configuration-name'), '/', parameters('settings')[copyIndex()].name)]",
+        "location": "[resourceGroup().location]",
+        "properties": {
+          "value": "[parameters('settings')[copyIndex()].value]",
+          "contentType": "[if(contains(string(parameters('settings')[copyIndex()].value), 'vault.azure.net/secrets'), 'application/vnd.microsoft.appconfig.keyvaultref+json;charset=utf-8', '')]"
+        },
+        "copy": {
+          "name": "appsettingscopy",
+          "count": "[length(parameters('settings'))]"
+        }
+      }
+    ],
+    "outputs": {}
+  }
+  
